@@ -1,4 +1,5 @@
-# dnacurve.__main__.py
+# -*- coding: utf-8 -*-
+# dnacurve/__main__.py
 
 import sys
 
