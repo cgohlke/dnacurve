@@ -1,4 +1,5 @@
-# dnacurve.__init__.py
+# -*- coding: utf-8 -*-
+# dnacurve/__init__.py
 
 from .dnacurve import *
 from .dnacurve import __doc__
