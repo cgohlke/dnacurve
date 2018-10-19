@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # dnacurve.py
 
@@ -8,19 +7,21 @@
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #
-# * Redistributions of source code must retain the above copyright
-#   notice, this list of conditions and the following disclaimer.
-# * Redistributions in binary form must reproduce the above copyright
-#   notice, this list of conditions and the following disclaimer in the
-#   documentation and/or other materials provided with the distribution.
-# * Neither the name of the copyright holders nor the names of any
-#   contributors may be used to endorse or promote products derived
-#   from this software without specific prior written permission.
+# * Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+#
+# * Neither the name of the copyright holder nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
 # LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 # CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 # SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -31,15 +32,16 @@
 
 """DNA Curvature Analysis.
 
-Calculate the global 3D structure of a B-DNA molecule from its nucleotide
-sequence according to the dinucleotide wedge model. Analyze local bending
-angles and macroscopic curvature at each nucleotide.
+Dnacurve is a Python library and console script to calculate the global
+3D structure of a B-DNA molecule from its nucleotide sequence according to the
+dinucleotide wedge model. Local bending angles and macroscopic curvature
+are calculated at each nucleotide.
 
-For command line usage run ``python dnacurve.py --help``
+For command line usage run ``python -m dnacurve --help``
 
 :Author: `Christoph Gohlke <https://www.lfd.uci.edu/~gohlke/>`_
 
-:Version: 2018.8.15
+:Version: 2018.10.18
 
 Requirements
 ------------
@@ -114,6 +116,13 @@ array([[ 0.58061616,  0.58163338,  0.58277938,  0.583783  ],
 
 from __future__ import division, print_function
 
+__version__ = '2018.10.18'
+__docformat__ = 'restructuredtext en'
+__all__ = ('CurvedDNA', 'Model', 'Sequence', 'MODELS', 'MAXLEN', 'main',
+           'complementary', 'oligonucleotides', 'unique_oligos', 'chunks',
+           'overlapping_chunks', 'dinuc_window', 'dinucleotide_matrix',
+           'superimpose_matrix')
+
 import sys
 import os
 import re
@@ -122,13 +131,6 @@ import datetime
 import warnings
 
 import numpy
-
-__version__ = '2018.8.15'
-__docformat__ = 'restructuredtext en'
-__all__ = ('CurvedDNA', 'Model', 'Sequence', 'MODELS', 'MAXLEN', 'main',
-           'complementary', 'oligonucleotides', 'unique_oligos', 'chunks',
-           'overlapping_chunks', 'dinuc_window', 'dinucleotide_matrix',
-           'superimpose_matrix')
 
 MAXLEN = 510  # maximum length of sequence
 
