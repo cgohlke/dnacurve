@@ -1,16 +1,18 @@
+# -*- coding: utf-8 -*-
 # dnacurve/setup.py
+
+"""Dnacurve package setuptools script."""
 
 import sys
 import re
 
 from setuptools import setup
 
-
 with open('dnacurve/dnacurve.py') as fh:
     code = fh.read()
 
 version = re.search(r"__version__ = '(.*?)'", code).groups()[0]
-description = re.search(r'"""(.*)\.\n', code).groups()[0]
+description = re.search(r'"""(.*)\.[\r\n?|\n]', code).groups()[0]
 readme = re.search(r'[\r\n?|\n]{2}"""(.*)"""[\r\n?|\n]{2}from', code,
                    re.MULTILINE | re.DOTALL).groups()[0]
 license = re.search(r'(# Copyright.*?[\r\n?|\n])[\r\n?|\n]+""', code,
@@ -35,13 +37,14 @@ setup(
     author_email='cgohlke@uci.edu',
     url='https://www.lfd.uci.edu/~gohlke/',
     packages=['dnacurve'],
-    install_requires=['numpy (>=1.11.3)', 'matplotlib (>=2.1.0)'],
+    python_requires='>=2.7',
+    install_requires=['numpy>=1.11.3', 'matplotlib>=2.1.0'],
     entry_points={
         'console_scripts': [
             'dnacurve = dnacurve.dnacurve:main',
             'dnacurve_web = dnacurve.dnacurve_web:main'
             ]},
-    license="BSD",
+    license='BSD',
     platforms=['any'],
     classifiers=[
         'Development Status :: 4 - Beta',
