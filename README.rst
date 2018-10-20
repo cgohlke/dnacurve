@@ -1,15 +1,16 @@
 DNA Curvature Analysis
 ======================
 
-Calculate the global 3D structure of a B-DNA molecule from its nucleotide
-sequence according to the dinucleotide wedge model. Analyze local bending
-angles and macroscopic curvature at each nucleotide.
+Dnacurve is a Python library and console script to calculate the global
+3D structure of a B-DNA molecule from its nucleotide sequence according to the
+dinucleotide wedge model. Local bending angles and macroscopic curvature
+are calculated at each nucleotide.
 
-For command line usage run ``python dnacurve.py --help``
+For command line usage run ``python -m dnacurve --help``
 
 :Author: `Christoph Gohlke <https://www.lfd.uci.edu/~gohlke/>`_
 
-:Version: 2018.8.15
+:Version: 2018.10.18
 
 Requirements
 ------------
