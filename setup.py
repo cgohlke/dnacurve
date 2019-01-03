@@ -38,7 +38,7 @@ setup(
     url='https://www.lfd.uci.edu/~gohlke/',
     packages=['dnacurve'],
     python_requires='>=2.7',
-    install_requires=['numpy>=1.11.3', 'matplotlib>=2.1.0'],
+    install_requires=['numpy>=1.11.3', 'matplotlib>=2.2.0'],
     entry_points={
         'console_scripts': [
             'dnacurve = dnacurve.dnacurve:main',
@@ -55,7 +55,6 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
