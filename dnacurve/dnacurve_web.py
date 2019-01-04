@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # dnacurve_web.py
 
-# Copyright (c) 2005-2018, Christoph Gohlke
+# Copyright (c) 2005-2019, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,16 +36,18 @@ Run ``python dnacurve_web.py`` to execute the script in a local web server.
 
 :Author: `Christoph Gohlke <https://www.lfd.uci.edu/~gohlke/>`_
 
-:Version: 2018.10.18
+:Version: 2019.1.1
 
 Requirements
 ------------
 * `Python 2.7 or 3.5+ <http://www.python.org>`_
-* `Dnacurve.py 2018.10.18 <https://www.lfd.uci.edu/~gohlke/>`_
+* `Dnacurve.py 2019.1.1 <https://www.lfd.uci.edu/~gohlke/>`_
 * A JavaScript enabled web browser.
 
 Revisions
 ---------
+2019.1.1
+    Update copyright year.
 2018.8.15
     Move module into dnacurve package.
 2018.5.29
@@ -70,7 +72,7 @@ Revisions
 
 from __future__ import division, print_function
 
-__version__ = '2018.10.18'
+__version__ = '2019.1.1'
 __docformat__ = 'restructuredtext en'
 
 import os
@@ -158,8 +160,9 @@ document.forms.dnacurve.submit()" rel="nofollow" title="Show models">?</a>
 </body>
 </html>"""
 
-HELP = """<p>This form calculates the global 3D structure of a DNA molecule
-from its nucleotide sequence according to the dinucleotide wedge model.
+HELP = """<p>This web application calculates the global 3D structure of a
+DNA molecule from its nucleotide sequence according to the dinucleotide wedge
+model.
 Local bending angles and macroscopic curvature are analyzed.</p>
 <p>Try the
 <a href="" onclick="javascript:document.forms.dnacurve.seq.value='{s1}';
