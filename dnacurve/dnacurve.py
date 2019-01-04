@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # dnacurve.py
 
-# Copyright (c) 1994-2018, Christoph Gohlke
+# Copyright (c) 1994-2019, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ For command line usage run ``python -m dnacurve --help``
 
 :Author: `Christoph Gohlke <https://www.lfd.uci.edu/~gohlke/>`_
 
-:Version: 2018.10.18
+:Version: 2019.1.1
 
 Requirements
 ------------
@@ -51,6 +51,8 @@ Requirements
 
 Revisions
 ---------
+2019.1.1
+    Update copyright year.
 2018.8.15
     Move modules into dnacurve package.
 2018.5.29
@@ -81,7 +83,7 @@ long sequences. By default sequences are truncated to 510 nucleotides,
 which can be overridden by the user.
 
 The generated PDB files can be visualized interactively using
-`UCSF Chimera <http://www.cgl.ucsf.edu/chimera/>`_.
+`UCSF Chimera <https://www.cgl.ucsf.edu/chimera/>`_.
 
 References
 ----------
@@ -116,7 +118,7 @@ array([[ 0.58061616,  0.58163338,  0.58277938,  0.583783  ],
 
 from __future__ import division, print_function
 
-__version__ = '2018.10.18'
+__version__ = '2019.1.1'
 __docformat__ = 'restructuredtext en'
 __all__ = ('CurvedDNA', 'Model', 'Sequence', 'MODELS', 'MAXLEN', 'main',
            'complementary', 'oligonucleotides', 'unique_oligos', 'chunks',
@@ -530,6 +532,7 @@ class CurvedDNA(object):
 
     @property
     def name(self):
+        """Return name of sequence."""
         return self.sequence.name
 
 
@@ -789,11 +792,11 @@ class Model(object):
 
     def _fromclass(self, aclass):
         """Return model parameters as dict from class."""
-        return dict((a, getattr(aclass, a)) for a in Model.STRAIGHT.keys())
+        return dict((a, getattr(aclass, a)) for a in Model.STRAIGHT)
 
     def _fromdict(self, adict):
         """Return model parameters as dict from dictionary."""
-        for attr in Model.STRAIGHT.keys():
+        for attr in Model.STRAIGHT:
             adict[attr]  # noqa: validation
         return adict
 
@@ -1053,7 +1056,7 @@ def dinucleotide_matrix(rise, twist, roll, tilt):
         (cost*sinw, sinr*sint*sinw+cosr*cosw, cosr*sint*sinw-sinr*cosw,  0.0),
         (    -sint,                sinr*cost,                cosr*cost, rise),
         (      0.0,                      0.0,                      0.0,  1.0)),
-        dtype='float64')
+                       dtype='float64')
 
 
 def superimpose_matrix(v0, v1):
@@ -1090,7 +1093,7 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
 
-    # todo: use argparse module
+    # TODO: use argparse module
     import optparse
 
     def search_doc(r, d):
