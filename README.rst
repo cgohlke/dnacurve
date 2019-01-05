@@ -10,7 +10,7 @@ For command line usage run ``python -m dnacurve --help``
 
 :Author: `Christoph Gohlke <https://www.lfd.uci.edu/~gohlke/>`_
 
-:Version: 2018.10.18
+:Version: 2019.1.1
 
 Requirements
 ------------
@@ -20,6 +20,8 @@ Requirements
 
 Revisions
 ---------
+2019.1.1
+    Update copyright year.
 2018.8.15
     Move modules into dnacurve package.
 2018.5.29
@@ -50,7 +52,7 @@ long sequences. By default sequences are truncated to 510 nucleotides,
 which can be overridden by the user.
 
 The generated PDB files can be visualized interactively using
-`UCSF Chimera <http://www.cgl.ucsf.edu/chimera/>`_.
+`UCSF Chimera <https://www.cgl.ucsf.edu/chimera/>`_.
 
 References
 ----------
