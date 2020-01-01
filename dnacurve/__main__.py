@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # dnacurve/__main__.py
 
 """Dnacurve package command line script."""
