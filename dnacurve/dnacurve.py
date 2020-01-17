@@ -1,22 +1,21 @@
-# -*- coding: utf-8 -*-
 # dnacurve.py
 
-# Copyright (c) 1994-2019, Christoph Gohlke
+# Copyright (c) 1994-2020, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the following disclaimer.
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
 #
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
 #
-# * Neither the name of the copyright holder nor the names of its
-#   contributors may be used to endorse or promote products derived from
-#   this software without specific prior written permission.
+# 3. Neither the name of the copyright holder nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -41,18 +40,21 @@ For command line usage run ``python -m dnacurve --help``
 
 :Author: `Christoph Gohlke <https://www.lfd.uci.edu/~gohlke/>`_
 
-:Version: 2019.1.1
+:License: BSD 3-Clause
+
+:Version: 2020.1.1
 
 Requirements
 ------------
-* `CPython 2.7 or 3.5+ <https://www.python.org>`_
+* `CPython >= 3.6 <https://www.python.org>`_
 * `Numpy 1.14 <https://www.numpy.org>`_
-* `Matplotlib 2.2 <https://www.matplotlib.org>`_
+* `Matplotlib 3.1 <https://www.matplotlib.org>`_
 
 Revisions
 ---------
-2019.1.1
-    Update copyright year.
+2020.1.1
+    Remove support for Python 2.7 and 3.5.
+    Update copyright.
 2018.8.15
     Move modules into dnacurve package.
 2018.5.29
@@ -87,43 +89,43 @@ The generated PDB files can be visualized interactively using
 
 References
 ----------
-(1) Bending and curvature calculations in B-DNA.
-    Goodsell DS, Dickerson RE. Nucleic Acids Res 22, 5497-503, 1994.
-    See also http://mgl.scripps.edu/people/goodsell/research/bend/
-(2) Curved DNA without A-A: experimental estimation of all 16 DNA wedge angles.
-    Bolshoy A et al. Proc Natl Acad Sci USA 88, 2312-6, 1991.
-(3) A comparison of six DNA bending models.
-    Tan RK and Harvey SC. J Biomol Struct Dyn 5, 497-512, 1987.
-(4) Curved DNA: design, synthesis, and circularization.
-    Ulanovsky L et al. Proc Natl Acad Sci USA 83, 862-6, 1986.
-(5) The ten helical twist angles of B-DNA.
-    Kabsch W, Sander C, and Trifonov EN. Nucleic Acids Res 10, 1097-1104, 1982.
-(6) Rod models of DNA: sequence-dependent anisotropic elastic modelling of
-    local bending phenomena.
-    Munteanu MG et al. Trends Biochem Sci 23(9), 341-7, 1998.
+1. Bending and curvature calculations in B-DNA.
+   Goodsell DS, Dickerson RE. Nucleic Acids Res 22, 5497-503, 1994.
+   See also http://mgl.scripps.edu/people/goodsell/research/bend/
+2. Curved DNA without A-A: experimental estimation of all 16 DNA wedge angles.
+   Bolshoy A et al. Proc Natl Acad Sci USA 88, 2312-6, 1991.
+3. A comparison of six DNA bending models.
+   Tan RK and Harvey SC. J Biomol Struct Dyn 5, 497-512, 1987.
+4. Curved DNA: design, synthesis, and circularization.
+   Ulanovsky L et al. Proc Natl Acad Sci USA 83, 862-6, 1986.
+5. The ten helical twist angles of B-DNA.
+   Kabsch W, Sander C, and Trifonov EN. Nucleic Acids Res 10, 1097-1104, 1982.
+6. Rod models of DNA: sequence-dependent anisotropic elastic modelling of
+   local bending phenomena.
+   Munteanu MG et al. Trends Biochem Sci 23(9), 341-7, 1998.
 
 Examples
 --------
 >>> from dnacurve import CurvedDNA
 >>> result = CurvedDNA('ATGCAAATTG'*5, 'trifonov', name='Example')
 >>> result.curvature[:, 18:22]
-array([[ 0.58061616,  0.58163338,  0.58277938,  0.583783  ],
-       [ 0.08029914,  0.11292516,  0.07675816,  0.03166286],
-       [ 0.57923902,  0.57580064,  0.57367815,  0.57349872]])
+array([[0.58062, 0.58163, 0.58278, 0.58378],
+       [0.0803 , 0.11293, 0.07676, 0.03166],
+       [0.57924, 0.5758 , 0.57368, 0.5735 ]])
 >>> result.save_csv('_test.csv')
 >>> result.save_pdb('_test.pdb')
 >>> result.plot('_test.png', dpi=160)
 
 """
 
-from __future__ import division, print_function
+__version__ = '2020.1.1'
 
-__version__ = '2019.1.1'
-__docformat__ = 'restructuredtext en'
-__all__ = ('CurvedDNA', 'Model', 'Sequence', 'MODELS', 'MAXLEN', 'main',
-           'complementary', 'oligonucleotides', 'unique_oligos', 'chunks',
-           'overlapping_chunks', 'dinuc_window', 'dinucleotide_matrix',
-           'superimpose_matrix')
+__all__ = (
+    'CurvedDNA', 'Model', 'Sequence', 'MODELS', 'MAXLEN', 'main',
+    'complementary', 'oligonucleotides', 'unique_oligos', 'chunks',
+    'overlapping_chunks', 'dinuc_window', 'dinucleotide_matrix',
+    'superimpose_matrix'
+)
 
 import sys
 import os
@@ -137,7 +139,7 @@ import numpy
 MAXLEN = 510  # maximum length of sequence
 
 
-class CurvedDNA(object):
+class CurvedDNA:
     """Calculate, plot or save helix coordinates, local bending and curvature.
 
     Attributes
@@ -195,10 +197,12 @@ class CurvedDNA(object):
     See module examples.
 
     """
-    p_coord = (  # cylindrical coordinates of 5' phosphate
-        8.91,    # distance from axis
-        -5.2,    # angle to roll axis
-        2.08)    # distance from bp plane
+
+    P_COORDINATES = (  # cylindrical coordinates of 5' phosphate
+        8.91,  # distance from axis
+        -5.2,  # angle to roll axis
+        2.08,  # distance from basepair plane
+    )
 
     def __init__(self, sequence, model='trifonov', name='Untitled',
                  curvature_window=10, bend_window=2, curve_window=15,
@@ -235,15 +239,16 @@ class CurvedDNA(object):
             self.sequence = Sequence(sequence, name, maxlen=maxlen)
         if len(self.sequence) < self.model.order:
             raise ValueError(
-                'sequence must be >%i nucleotides long' % self.model.order)
-        elif len(self.sequence) > maxlen:
-            warnings.warn('sequence is longer than %i nucleotides' % maxlen)
+                f'sequence must be >{self.model.order} nucleotides long'
+            )
+        if len(self.sequence) > maxlen:
+            warnings.warn(f'sequence is longer than {maxlen} nucleotides')
 
         assert 0 < curvature_window < 21
         assert 0 < bend_window < 4
         assert 9 < curve_window < 21
         self.windows = [curvature_window, bend_window, curve_window]
-        self._limits = [10., 10., 10.]
+        self._limits = [10.0, 10.0, 10.0]
 
         self.date = datetime.datetime.now()
         self.coordinates = numpy.zeros((5, len(self), 4), dtype='float64')
@@ -261,11 +266,11 @@ class CurvedDNA(object):
 
     def __str__(self):
         """Return string representation of sequence and model."""
-        return '%s\n\n%s\n' % (str(self.sequence), str(self.model))
+        return f'{self.sequence}\n\n{self.model}\n'
 
     def _coordinates(self):
         """Calculate coordinates and normal vectors from sequence and model."""
-        p = self.p_coord
+        p = self.P_COORDINATES
         p = numpy.array((p[0] * math.cos(math.radians(p[1])),
                          p[0] * math.sin(math.radians(p[1])),
                          p[2]))
@@ -279,16 +284,16 @@ class CurvedDNA(object):
         matrices = self.model.matrices
         dot = numpy.dot
         for i, seq in enumerate(dinuc_window(self.sequence, self.model.order)):
-            xyz[:4, :i+1, :] = dot(xyz[:4, :i+1, :], matrices[seq])
+            xyz[:4, :i + 1, :] = dot(xyz[:4, :i + 1, :], matrices[seq])
 
         # Average direction vector of one helix turn,
         # calculated by smoothing the basepair normals
         if len(self.sequence) > 10:
-            kernel = numpy.array([.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, .5])
+            kernel = numpy.array([0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.5])
             kernel /= kernel.sum()
             for i in 0, 1, 2:
                 xyz[4, :, i] = numpy.convolve(kernel, xyz[3, :, i], 'same')
-            for i in range(5, len(self)-5):
+            for i in range(5, len(self) - 5):
                 xyz[4, i, :] /= norm(xyz[4, i, :])
 
     def _reorient(self):
@@ -303,16 +308,16 @@ class CurvedDNA(object):
         e /= e_len
         # point i of maximum distance to end to end line
         x = numpy.cross(e, xyz)
-        x = numpy.sum(x*x, axis=1)
+        x = numpy.sum(x * x, axis=1)
         i = numpy.argmax(x)
         x = math.sqrt(x[i])
         # distance of endpoint to xyz[i]
         w = norm(xyz[i])
         # distance of endpoint to point on end to end line nearest to xyz[i]
-        u = math.sqrt(w*w - x*x)
+        u = math.sqrt(w * w - x * x)
         # find transformation matrix
         v0 = xyz[[0, i, -1]]
-        v1 = numpy.array(((0, 0, 0), (e_len-u, 0, x), (e_len, 0, 0)))
+        v1 = numpy.array(((0, 0, 0), (e_len - u, 0, x), (e_len, 0, 0)))
         M = superimpose_matrix(v0, v1)
         self.coordinates = numpy.dot(self.coordinates, M.T)
 
@@ -322,7 +327,7 @@ class CurvedDNA(object):
         low = numpy.min(numpy.min(xyz, axis=1), axis=0)
         upp = numpy.max(numpy.max(xyz, axis=1), axis=0)
         self._limits = (upp - low) / 2.0
-        self.coordinates[0:3, :, 0:3] -= (low + self._limits)
+        self.coordinates[0:3, :, 0:3] -= low + self._limits
 
     def _curvature(self):
         """Calculate normalized curvature and bend angles."""
@@ -332,11 +337,11 @@ class CurvedDNA(object):
 
         # curvature from radius
         window = self.windows[0]
-        if len(self) >= 2*window:
+        if len(self) >= 2 * window:
             result = self.curvature[0, :]
             xyz = self.coordinates[0, :, 0:3]  # helix axis
-            for i in range(window, len(self)-window):
-                a, b, c = xyz[[i-window, i, i+window]]
+            for i in range(window, len(self) - window):
+                a, b, c = xyz[[i - window, i, i + window]]
                 ab = b - a
                 bc = c - b
                 ac = c - a
@@ -344,27 +349,30 @@ class CurvedDNA(object):
                 lbc = norm(bc)
                 lac = norm(ac)
                 area = norm(cross(ab, ac))
-                result[i] = (2.0*area) / (lab*lbc*lac)
+                result[i] = (2.0 * area) / (lab * lbc * lac)
 
         # local bend angles from basepair normals
         window = self.windows[1]
-        if len(self) >= 2*window:
+        if len(self) >= 2 * window:
             normals = self.coordinates[3, :, 0:3]
             result = self.curvature[1, :]
-            for i in range(window, len(self)-window):
-                if not numpy.allclose(normals[i-window], normals[i+window]):
-                    result[i] = arccos(dot(normals[i-window],
-                                           normals[i+window]))
+            for i in range(window, len(self) - window):
+                if not numpy.allclose(normals[i - window],
+                                      normals[i + window]):
+                    result[i] = arccos(dot(normals[i - window],
+                                           normals[i + window]))
 
         # curvature angles from smoothed basepair normals
         window = self.windows[2]
-        if len(self) >= 2*window:
+        if len(self) >= 2 * window:
             normals = self.coordinates[4, :, 0:3]
             result = self.curvature[2, :]
-            for i in range(window, len(self)-window):
-                if not numpy.allclose(normals[i-window], normals[i+window]):
-                    result[i] = arccos(dot(normals[i-window],
-                                           normals[i+window]))
+            for i in range(window, len(self) - window):
+                if not numpy.allclose(normals[i - window],
+                                      normals[i + window]):
+                    result[i] = arccos(dot(normals[i - window],
+                                           normals[i + window]))
+
         self.curvature = numpy.nan_to_num(self.curvature)
 
         # normalize relative to curvature in nucleosome
@@ -387,33 +395,37 @@ class CurvedDNA(object):
         seq = self.sequence
         cur = self.curvature
         xyz = self.coordinates
-        csv = ['Sequence,Index,Curvature / %.4f [%i],'
-               'Bend Angle / %.4f  [%i],Curvature Angle / %.4f  [%i],'
-               'Helix Axis [x],Helix Axis [y],Helix Axis [z],'
-               'Phosphate 1 [x],Phosphate 1 [y],Phosphate 1 [z],'
-               'Phosphate 2 [x],Phosphate 2 [y],Phosphate 2 [z],'
-               'Basepair Normal [x],Basepair Normal [y],Basepair Normal [z],'
-               'Smoothed Normal [x],Smoothed Normal [y],Smoothed Normal [z]'
-               '\n' % (self.scales[0], self.windows[0], self.scales[1],
-                       self.windows[1], self.scales[2], self.windows[2])]
+        csv = [
+            'Sequence,Index,Curvature / {:.4f} [{}],'
+            'Bend Angle / {:.4f}  [{}],Curvature Angle / {:.4f}  [{}],'
+            'Helix Axis [x],Helix Axis [y],Helix Axis [z],'
+            'Phosphate 1 [x],Phosphate 1 [y],Phosphate 1 [z],'
+            'Phosphate 2 [x],Phosphate 2 [y],Phosphate 2 [z],'
+            'Basepair Normal [x],Basepair Normal [y],Basepair Normal [z],'
+            'Smoothed Normal [x],Smoothed Normal [y],Smoothed Normal [z]'
+            '\n'.format(
+                self.scales[0, 0], self.windows[0],
+                self.scales[1, 0], self.windows[1],
+                self.scales[2, 0], self.windows[2],
+            )
+        ]
         for i in range(len(self)):
-            csv.append('%s,%i' % (seq[i], i+1))
-            csv.append(',%.5f,%.5f,%.5f' % tuple(cur[:, i]))
+            csv.append(f'{seq[i]},{i + 1}')
+            csv.append(',{:.5f},{:.5f},{:.5f}'.format(*cur[:, i]))
             for j in range(5):
-                csv.append(',%.5f,%.5f,%.5f' % tuple(xyz[j, i, 0:3]))
+                csv.append(',{:.5f},{:.5f},{:.5f}'.format(*xyz[j, i, 0:3]))
             csv.append('\n')
         return ''.join(csv)
 
     def pdb(self):
         """Return atomic coordinates in PDB format."""
         pdb = []
-        pdb.append('HEADER    %-40s%9s   0XXX\n' % (
-            self.sequence.name,
-            datetime.datetime.strftime(self.date, '%d-%b-%y').upper()))
-        pdb.append('REMARK    Generated by dnacurve.py on %s\n' % (
-            datetime.datetime.strftime(self.date, '%d %b %Y, %H:%M:%S')))
-        pdb.append('REMARK    Sequence: %s\n' % self.sequence.name)
-        pdb.append('REMARK    Parameters: %s\n' % self.model.name)
+        date1 = datetime.datetime.strftime(self.date, '%d-%b-%y').upper()
+        date2 = datetime.datetime.strftime(self.date, '%d %b %Y, %H:%M:%S')
+        pdb.append(f'HEADER    {self.sequence.name:<40s}{date1:9s}   0XXX\n')
+        pdb.append(f'REMARK    Generated by dnacurve.py on {date2}\n')
+        pdb.append(f'REMARK    Sequence: {self.sequence.name}\n')
+        pdb.append(f'REMARK    Parameters: {self.model.name}\n')
         seq = self.sequence
         xyz = self.coordinates[0:3, :, 0:3]
         xyz = xyz - xyz.min(axis=1).min(axis=0)
@@ -423,9 +435,10 @@ class CurvedDNA(object):
             for i in range(len(self)):
                 x, y, z = xyz[j, i, 0:3]
                 pdb.append(
-                    'ATOM  %5i %-4s%1s%-3s %1s%4i    %8.3f%8.3f%8.3f'
-                    '  1.00  0.0          %2s  \n' %
-                    (i+1, name, ' ', seq[i], chain, i+1, x, y, z, element))
+                    f'ATOM  {i + 1:5} {name:<4s} {seq[i]:<3s}'
+                    f' {chain:1s}{i + 1:4}    {x:8.3f}{y:8.3f}{z:8.3f}'
+                    f'  1.00  0.00          {element:>2s}  \n'
+                )
             pdb.append('TER\n')
         pdb.append('END\n')
         return ''.join(pdb)
@@ -444,11 +457,12 @@ class CurvedDNA(object):
 
         """
         if not arg:
-            return
+            return None
 
         if arg is True:
             # GUI plot
             from matplotlib import pyplot
+
             fig = pyplot.figure(dpi=dpi, figsize=figsize)
             try:
                 fig.canvas.manager.window.title('DNA Curvature Analysis')
@@ -457,18 +471,21 @@ class CurvedDNA(object):
         else:
             from matplotlib.backends.backend_agg import FigureCanvasAgg
             from matplotlib.figure import Figure
+
             fig = Figure(dpi=dpi, figsize=figsize)
             FigureCanvasAgg(fig)
 
         # sequence
         ax = fig.add_subplot(321)
         ax.set_title(
-            'Sequence: %s\nModel: %s' % (self.sequence.name, self.model.name),
-            x=0, horizontalalignment='left', size=11)
+            f'Sequence: {self.sequence.name}\nModel: {self.model.name}',
+            x=0, horizontalalignment='left', size=11
+        )
         ax.text(
             0., 0.95, self.sequence.format(line=3), family='monospace',
             size=7, verticalalignment='top', horizontalalignment='left',
-            transform=ax.transAxes)
+            transform=ax.transAxes
+        )
         ax.set_axis_off()
         ax.axis('image')
 
@@ -478,13 +495,12 @@ class CurvedDNA(object):
 
         def plot_projection(plotnum, axes, label=True):
             ax = fig.add_subplot(plotnum)
-            ax.set_title('%s-%s' % tuple(axes), size=11)
-            ax0, ax1 = (ord(a)-88 for a in axes)
+            ax.set_title(f'{axes[0]}-{axes[1]}', size=11)
+            ax0, ax1 = (ord(a) - 88 for a in axes)
             # TODO: sort lines by depth and draw back to front
-            ax.plot(
-                xyz[1, :, ax0], xyz[1, :, ax1], 'r-',
-                xyz[2, :, ax0], xyz[2, :, ax1], 'b-',
-                xyz[0, :, ax0], xyz[0, :, ax1], 'k-', lw=0.8)
+            ax.plot(xyz[1, :, ax0], xyz[1, :, ax1], 'r-',
+                    xyz[2, :, ax0], xyz[2, :, ax1], 'b-',
+                    xyz[0, :, ax0], xyz[0, :, ax1], 'k-', lw=0.8)
             if label:
                 ax.text(xyz[1, 0, ax0], xyz[1, 0, ax1], "5'",
                         color='darkred', clip_on=True, size=10)
@@ -504,9 +520,9 @@ class CurvedDNA(object):
 
         def plot_curvature(index, label, style, lw):
             w = self.windows[index]
-            ax.plot(numpy.arange(w, len(self)-w),
+            ax.plot(numpy.arange(w, len(self) - w),
                     self.curvature[index, w:-w], style, lw=lw,
-                    label=label+' / %.4f [%i]' % (self.scales[index], w))
+                    label=label + f' / {self.scales[index, 0]:.4f} [{w}]')
 
         plot_curvature(0, 'Curvature', 'r-', 0.8)
         plot_curvature(2, 'Curvature Angle', 'b-', 0.8)
@@ -529,6 +545,7 @@ class CurvedDNA(object):
             fig.savefig(arg, dpi=dpi, format=imageformat)
         else:
             return fig
+        return None
 
     @property
     def name(self):
@@ -536,7 +553,7 @@ class CurvedDNA(object):
         return self.sequence.name
 
 
-class Model(object):
+class Model:
     """N-mer DNA-bending model.
 
     Transformation parameters and matrices for all oligonucleotides of
@@ -576,10 +593,11 @@ class Model(object):
     True
 
     """
+
     STRAIGHT = dict(
         name = 'Straight',
         oligo = 'AA AC AG AT CA GG CG GA GC TA',
-        twist = (360.0/10.5, ) * 10,
+        twist = (360.0 / 10.5, ) * 10,
         roll =  (0.0, ) * 10,
         tilt =  (0.0, ) * 10,
         rise = 3.38)
@@ -706,8 +724,10 @@ class Model(object):
 
         """
         if model:
-            for importfunction in (self._fromname, self._fromdict,
-                                   self._fromclass, self._fromfile):
+            for importfunction in (self._fromname,
+                                   self._fromdict,
+                                   self._fromclass,
+                                   self._fromfile):
                 try:
                     # import functions return dictionary or raise exception
                     model = importfunction(model)
@@ -715,7 +735,7 @@ class Model(object):
                 except Exception:
                     pass
             else:
-                raise ValueError('cannot initialize model from %s' % model)
+                raise ValueError(f'cannot initialize model from {model}')
         else:
             model = Model.STRAIGHT
 
@@ -751,17 +771,18 @@ class Model(object):
         else:
             oligos = list(unique_oligos(self.order))
 
-        def format_(items, formatstr='%5.2f', sep='  '):
-            items = [formatstr % item for item in items]
+        def format_(items, formatstr='{:5.2f}', sep='  '):
+            items = [formatstr.format(item) for item in items]
             return '\n        '.join(sep.join(line) for line in chunks(items))
 
-        result = [
-            '%s\nRise    %.2f' % (self.name.split('\n')[0], self.rise),
-            'Oligo   ' + format_(oligos, '%s', ' ' * (7-self.order)),
+        return '\n'.join((
+            '{}'.format(self.name.split('\n')[0]),
+            'Rise    {:.2f}'.format(self.rise),
+            'Oligo   ' + format_(oligos, '{}', ' ' * (7 - self.order)),
             'Twist   ' + format_(self.twist[i] for i in oligos),
             'Roll    ' + format_(self.roll[i] for i in oligos),
-            'Tilt    ' + format_(self.tilt[i] for i in oligos)]
-        return '\n'.join(result)
+            'Tilt    ' + format_(self.tilt[i] for i in oligos),
+        ))
 
     def _fromfile(self, path):
         """Return model parameters as dict from file."""
@@ -792,7 +813,7 @@ class Model(object):
 
     def _fromclass(self, aclass):
         """Return model parameters as dict from class."""
-        return dict((a, getattr(aclass, a)) for a in Model.STRAIGHT)
+        return {a: getattr(aclass, a) for a in Model.STRAIGHT}
 
     def _fromdict(self, adict):
         """Return model parameters as dict from dictionary."""
@@ -806,7 +827,7 @@ class Model(object):
             fh.write(str(self))
 
 
-class Sequence(object):
+class Sequence:
     """DNA nucleotide sequence.
 
     Attributes
@@ -838,6 +859,7 @@ class Sequence(object):
     True
 
     """
+
     # Proc Natl Acad Sci USA, 1983, 80(24), p 7678, Fig 1
     KINETOPLAST = """
         GATCTAGACT AGACGCTATC GATAAAGTTT AAACAGTACA ACTATCGTGC TACTCACCTG
@@ -858,7 +880,7 @@ class Sequence(object):
         self.comment = comment
         self._sequence = ''
         if os.path.isfile(arg):
-            self._fromfile(arg, maxsize=maxlen*2)
+            self._fromfile(arg, maxsize=maxlen * 2)
             self.fname = os.path.split(arg)[1]
         else:
             self._sequence = arg
@@ -875,7 +897,7 @@ class Sequence(object):
         self._sequence = ''.join(nucls.get(c, '') for c in self._sequence)
         # limit length of sequence
         if maxlen and len(self._sequence) > maxlen:
-            warnings.warn('sequence truncated to %i nucleotides' % maxlen)
+            warnings.warn(f'sequence truncated to {maxlen} nucleotides')
             self._sequence = self._sequence[:maxlen]
         if not self._sequence:
             raise ValueError('not a valid sequence')
@@ -904,9 +926,9 @@ class Sequence(object):
     def format(self, block=10, line=6):
         """Return string of sequence formatted in blocks and lines."""
         lines = chunks(chunks(self._sequence, block), line)
-        formatstr = '%%%ii %%s' % (len('%i' % ((len(lines)-1)*block*line, )), )
+        width = len(f'{(len(lines) - 1) * block * line}')
         for i, s in enumerate(lines):
-            lines[i] = formatstr % (i*line*block, ' '.join(s))
+            lines[i] = '{:{}} {}'.format(i * line * block, width, ' '.join(s))
         return '\n'.join(lines)
 
     def __getitem__(self, key):
@@ -930,10 +952,7 @@ class Sequence(object):
 
     def __str__(self):
         """Return string representation of sequence."""
-        return '%s\n%s\n%s' % (self.name, self.comment, self.format())
-
-
-_COMPLEMENTARY = dict(zip('ATCG', 'TAGC'))
+        return f'{self.name}\n{self.comment}\n{self.format()}'
 
 
 def complementary(sequence):
@@ -945,7 +964,7 @@ def complementary(sequence):
     'CGAT'
 
     """
-    c = _COMPLEMENTARY
+    c = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C'}
     return ''.join(c.get(nucleotide, '') for nucleotide in reversed(sequence))
 
 
@@ -958,12 +977,12 @@ def oligonucleotides(length, nucleotides='AGCT'):
     'AA AG AC AT GA GG GC GT CA CG CC CT TA TG TC TT'
 
     """
+
     def rloop(length, part):
         if length:
             length -= 1
             for nucleotide in nucleotides:
-                for oligo in rloop(length, part+nucleotide):
-                    yield oligo
+                yield from rloop(length, part + nucleotide)
         else:
             yield part
 
@@ -997,7 +1016,7 @@ def chunks(sequence, size=10):
     ['ATCGATCGAT', 'CGATCG']
 
     """
-    return [sequence[i:i+size] for i in range(0, len(sequence), size)]
+    return [sequence[i:i + size] for i in range(0, len(sequence), size)]
 
 
 def overlapping_chunks(sequence, size, overlap):
@@ -1010,7 +1029,7 @@ def overlapping_chunks(sequence, size, overlap):
 
     """
     index = 0
-    while index < len(sequence)-2*overlap:
+    while index < len(sequence) - 2 * overlap:
         yield index, sequence[index:index+size+2*overlap]
         index += size
 
@@ -1032,11 +1051,11 @@ def dinuc_window(sequence, size):
     """
     assert 1 < size <= len(sequence)
     border = size // 2
-    for i in range(0, border-1):
+    for i in range(0, border - 1):
         yield None
-    for i in range(0, len(sequence)-size+1):
-        yield sequence[i:i+size]
-    for i in range(len(sequence)-size+border, len(sequence)-1):
+    for i in range(0, len(sequence) - size + 1):
+        yield sequence[i:i + size]
+    for i in range(len(sequence) - size + border, len(sequence) - 1):
         yield None
 
 
@@ -1102,8 +1121,9 @@ def main(argv=None):
     parser = optparse.OptionParser(
         usage='usage: %prog [options] sequence | file',
         description=search_doc('\n\n([^|]*?)\n\n', ''),
-        version='%%prog %s' % __version__,
-        prog='dnacurve')
+        version=f'%prog {__version__}',
+        prog='dnacurve',
+    )
     opt = parser.add_option
     opt('-m', '--model', dest='model', metavar='MODEL', default='trifonov',
         help='input model name or file')
@@ -1131,17 +1151,16 @@ def main(argv=None):
     settings, sequence = parser.parse_args()
 
     if settings.web:
-        if __package__:
+        try:
             from . import dnacurve_web  # noqa: delay import
-        else:
+        except ImportError:
             import dnacurve_web  # noqa: delay import
+
         return dnacurve_web.main()
     if settings.doctest:
         import doctest
-        try:
-            numpy.set_printoptions(legacy='1.13')
-        except TypeError:
-            pass
+
+        numpy.set_printoptions(suppress=True, precision=5)
         doctest.testmod()
         return 0
     if settings.test:
@@ -1165,9 +1184,9 @@ def main(argv=None):
 
     try:
         results = CurvedDNA(sequence, settings.model, name=settings.name)
-    except Exception as e:
-        print('\nFatal Error: \n  ', e, sep='')
-        # raise e
+    except Exception as exc:
+        print('\nFatal Error: \n  ', exc, sep='')
+        # raise
     else:
         if settings.verbose:
             print('\n', results, sep='')
@@ -1180,8 +1199,8 @@ def main(argv=None):
         if settings.plot:
             try:
                 results.plot(settings.plot, dpi=settings.dpi)
-            except Exception as e:
-                print('\nFailed to plot results: \n  ', e, sep='')
+            except Exception as exc:
+                print('\nFailed to plot results: \n  ', exc, sep='')
         else:
             if settings.ps:
                 results.plot(settings.ps, dpi=settings.dpi)
@@ -1191,9 +1210,10 @@ def main(argv=None):
                 results.plot(settings.png, dpi=settings.dpi)
 
 
-MODELS = sorted((a for a in dir(Model)
-                 if not a.startswith('_') and a.isupper()),
-                key=lambda x: getattr(Model, x)['name'])
+MODELS = sorted(
+    (a for a in dir(Model) if not a.startswith('_') and a.isupper()),
+    key=lambda x: getattr(Model, x)['name']
+)
 
 if __name__ == '__main__':
     sys.exit(main())
