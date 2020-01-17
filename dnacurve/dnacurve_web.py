@@ -1,22 +1,21 @@
-# -*- coding: utf-8 -*-
 # dnacurve_web.py
 
-# Copyright (c) 2005-2019, Christoph Gohlke
+# Copyright (c) 2005-2020, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the following disclaimer.
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
 #
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
 #
-# * Neither the name of the copyright holder nor the names of its
-#   contributors may be used to endorse or promote products derived from
-#   this software without specific prior written permission.
+# 3. Neither the name of the copyright holder nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -36,18 +35,22 @@ Run ``python dnacurve_web.py`` to execute the script in a local web server.
 
 :Author: `Christoph Gohlke <https://www.lfd.uci.edu/~gohlke/>`_
 
-:Version: 2019.1.1
+:License: BSD 3-Clause
+
+:Version: 2020.1.1
 
 Requirements
 ------------
-* `Python 2.7 or 3.5+ <http://www.python.org>`_
-* `Dnacurve.py 2019.1.1 <https://www.lfd.uci.edu/~gohlke/>`_
+* `Python >= 3.6 <http://www.python.org>`_
+* `Dnacurve.py 2020.1.1 <https://www.lfd.uci.edu/~gohlke/>`_
 * A JavaScript enabled web browser.
 
 Revisions
 ---------
-2019.1.1
-    Update copyright year.
+2020.1.1
+    Fix csv file extension.
+    Remove support for Python 2.7 and 3.5.
+    Update copyright.
 2018.8.15
     Move module into dnacurve package.
 2018.5.29
@@ -70,10 +73,7 @@ Revisions
 
 """
 
-from __future__ import division, print_function
-
-__version__ = '2019.1.1'
-__docformat__ = 'restructuredtext en'
+__version__ = '2020.1.1'
 
 import os
 import sys
@@ -82,9 +82,9 @@ import base64
 import hashlib
 from html import escape
 
-if __package__:
+try:
     from . import dnacurve
-else:
+except ImportError:
     import dnacurve
 
 
@@ -108,7 +108,7 @@ background-color:#eeeeee;border:1px solid #aaaaaa;padding:1em 1em 0 1em}}
 form a {{font-weight:bold;margin-left:0.3em}}
 input {{margin-left:0.5em;min-width:8em}}
 label {{font-weight:bold}}
-textarea {{width:100%}}
+textarea {{width:100%;height:8em}}
 div.row {{display:flex;flex-wrap:wrap;justify-content:space-between;
 align-items:center;margin-top:1em}}
 div.row div {{margin-bottom:1em}}
@@ -136,7 +136,7 @@ title="DNA Curvature Analysis version {version} by Christoph Gohlke"
 <span>(max {maxlen:d} nucleotides)</span>
 </div>
 <div class="textarea">
-<textarea name="seq" id="seq" rows="6" cols="40">{sequence}</textarea>
+<textarea name="seq" id="seq">{sequence}</textarea>
 </div>
 <div class="row">
 <div>
@@ -161,8 +161,8 @@ document.forms.dnacurve.submit()" rel="nofollow" title="Show models">?</a>
 </html>"""
 
 HELP = """<p>This web application calculates the global 3D structure of a
-DNA molecule from its nucleotide sequence according to the dinucleotide wedge
-model.
+DNA molecule from its nucleotide sequence according to the dinucleotide
+wedge model.
 Local bending angles and macroscopic curvature are analyzed.</p>
 <p>Try the
 <a href="" onclick="javascript:document.forms.dnacurve.seq.value='{s1}';
@@ -220,16 +220,14 @@ The entire risk as to the quality and performance is with you.</p>
 <p>DNA Curvature Analysis version {version} by
 <a href="https://www.lfd.uci.edu/~gohlke/">Christoph Gohlke</a>.
 Source code is available at
-<a href="https://www.lfd.uci.edu/~gohlke/code/dnacurve.py.html">dnacurve.py</a>
-and <a href="https://www.lfd.uci.edu/~gohlke/code/dnacurve_web.py.html"
->dnacurve_web.py</a>.</p>
+<a href="https://pypi.org/project/dnacurve/">pypi.org</a>.</p>
 </div>"""
 
 RESULTS = """<!--h2>Results for {fname}</h2-->
 <img src="data:{mime};name={fname}.{imageext};base64,{plot}" alt="Plot" />
 <ul>
 <li><a href='data:text/csv;name={fname}.csv;base64,{csv}'
-download='{fname}.cvs'>Calculated values</a> (CSV format)</li>
+download='{fname}.csv'>Calculated values</a> (CSV format)</li>
 <li><a href='data:chemical/x-pdb;name={fname}.pdb;base64,{pdb}'
 download='{fname}.pdb'>Helix coordinates</a> (PDB format)</li>
 </ul>"""
@@ -242,13 +240,15 @@ def response(form, url, template=PAGE, help=HELP, maxlen=dnacurve.MAXLEN,
     mod = form.get('mod', '')
 
     if form.get('q', '') == 'version':
-        content = '<p>Version: %s</p>' % dnacurve.__version__
+        content = f'<p>Version: {dnacurve.__version__}</p>'
     elif form.get('q', '') == 'models':
         content = ['<h2>Curvature Models</h2>']
         for model in dnacurve.MODELS:
             lines = str(dnacurve.Model(model)).splitlines()
-            content.append('<h3>%s</h3>' % escape(lines[0]))
-            content.append('<pre>%s</pre>' % escape('\n'.join(lines[1:])))
+            content.append(f'<h3>{escape(lines[0])}</h3>')
+            content.append(
+                '<pre>{}</pre>'.format(escape('\n'.join(lines[1:])))
+            )
         content = '\n'.join(content)
     elif seq:
         if analyze_function is None:
@@ -258,21 +258,28 @@ def response(form, url, template=PAGE, help=HELP, maxlen=dnacurve.MAXLEN,
         content = help.format(
             version=dnacurve.__version__,
             s1=''.join(dnacurve.Sequence.KINETOPLAST.split())[:maxlen],
-            s2=(dnacurve.Sequence.PHASED_AAAAAA * 14)[:maxlen])
+            s2=(dnacurve.Sequence.PHASED_AAAAAA * 14)[:maxlen],
+        )
 
     options = []
     for model in dnacurve.MODELS:
         if model == mod:
-            option = '<option value="%s" selected="selected">%s</option>'
+            option = '<option value="{}" selected="selected">{}</option>'
         else:
-            option = '<option value="%s">%s</option>'
+            option = '<option value="{}">{}</option>'
         label = getattr(dnacurve.Model, model)['name']
-        options.append(option % (escape(model), escape(label)))
+        options.append(option.format(escape(model), escape(label)))
     options = '\n'.join(options)
 
     return template.format(
-        sequence=escape(seq), models=options, content=content, url=url,
-        version=dnacurve.__version__, heads=heads.strip(), maxlen=maxlen)
+        sequence=escape(seq),
+        models=options,
+        content=content,
+        url=url,
+        version=dnacurve.__version__,
+        heads=heads.strip(),
+        maxlen=maxlen,
+    )
 
 
 def analyze(sequence, model, maxlen, template=RESULTS, imageformat='svg'):
@@ -283,7 +290,7 @@ def analyze(sequence, model, maxlen, template=RESULTS, imageformat='svg'):
             raise ValueError('sequence is too long')
         if len(seq) < 10:
             raise ValueError('sequence is too short')
-        name = hashlib.md5(str2bytes(seq.string)).hexdigest()
+        name = hashlib.md5(seq.string.encode('ascii')).hexdigest()
         seq.name = name[:13]
         fname = name + str(dnacurve.MODELS.index(model))
         mod = dnacurve.Model(model)
@@ -298,11 +305,18 @@ def analyze(sequence, model, maxlen, template=RESULTS, imageformat='svg'):
         e = str(e).splitlines()
         text = e[0][0].upper() + e[0][1:]
         details = '\n'.join(e[1:])
-        return '<h2>Error</h2><p>%s</p><pre>%s</pre>' % (escape(text),
-                                                         escape(details))
+        return '<h2>Error</h2><p>{}</p><pre>{}</pre>'.format(
+            escape(text), escape(details)
+        )
     mime = {'svg': 'image/svg+xml', 'png': 'image/png'}[imageformat]
-    return template.format(plot=plot, pdb=pdb, csv=csv, fname=fname,
-                           mime=mime, imageext=imageformat)
+    return template.format(
+        plot=plot,
+        pdb=pdb,
+        csv=csv,
+        fname=fname,
+        mime=mime,
+        imageext=imageformat
+    )
 
 
 def b64encode(s):
@@ -311,37 +325,20 @@ def b64encode(s):
         s = s.encode('ascii')
     except Exception:
         pass
-    return bytes2str(base64.b64encode(s))
+    return base64.b64encode(s).decode(encoding='utf-8', errors='strict')
 
 
-if sys.version_info[0] == 2:
-    def str2bytes(s, encoding=None):
-        """Return bytes from str."""
-        return s
-
-    def bytes2str(b, encoding=None, errors=None):
-        """Return string from bytes."""
-        return b
-else:
-    def str2bytes(s, encoding='ascii'):
-        """Return bytes from str."""
-        return s.encode(encoding)
-
-    def bytes2str(b, encoding='utf-8', errors='strict'):
-        """Return str from encoded bytes."""
-        return b.decode(encoding, errors)
-
-
-def main(url='http://localhost:9000/%s'):
+def main(url='http://localhost:9000/{}'):
     """Run web application in local web server."""
     import cgi
     import cgitb
+
     cgitb.enable()
 
     dirname, filename = os.path.split(__file__)
     if filename[-1] != 'y':
         filename = filename[:-1]  # don't use .pyc or .pyo
-    url = url % filename
+    url = url.format(filename)
     if dirname:
         os.chdir(dirname)
 
@@ -352,13 +349,8 @@ def main(url='http://localhost:9000/%s'):
         print(response(request, url))
     else:
         import webbrowser
-        if sys.version_info[0] == 2:
-            from urlparse import urlparse
-            from BaseHTTPServer import HTTPServer
-            from CGIHTTPServer import CGIHTTPRequestHandler
-        else:
-            from urllib.parse import urlparse
-            from http.server import HTTPServer, CGIHTTPRequestHandler
+        from urllib.parse import urlparse
+        from http.server import HTTPServer, CGIHTTPRequestHandler
 
         def is_cgi(self):
             """Monkey patch for CGIHTTPRequestHandler.is_cgi()."""
@@ -371,8 +363,9 @@ def main(url='http://localhost:9000/%s'):
         print('Serving CGI script at', url)
         webbrowser.open(url)
         url = urlparse(url)
-        HTTPServer((url.hostname, url.port),
-                   CGIHTTPRequestHandler).serve_forever()
+        HTTPServer(
+            (url.hostname, url.port), CGIHTTPRequestHandler
+        ).serve_forever()
 
 
 if __name__ == '__main__':
