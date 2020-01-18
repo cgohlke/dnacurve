@@ -10,18 +10,21 @@ For command line usage run ``python -m dnacurve --help``
 
 :Author: `Christoph Gohlke <https://www.lfd.uci.edu/~gohlke/>`_
 
-:Version: 2019.1.1
+:License: BSD 3-Clause
+
+:Version: 2020.1.1
 
 Requirements
 ------------
-* `CPython 2.7 or 3.5+ <https://www.python.org>`_
+* `CPython >= 3.6 <https://www.python.org>`_
 * `Numpy 1.14 <https://www.numpy.org>`_
-* `Matplotlib 2.2 <https://www.matplotlib.org>`_
+* `Matplotlib 3.1 <https://www.matplotlib.org>`_
 
 Revisions
 ---------
-2019.1.1
-    Update copyright year.
+2020.1.1
+    Remove support for Python 2.7 and 3.5.
+    Update copyright.
 2018.8.15
     Move modules into dnacurve package.
 2018.5.29
@@ -56,29 +59,29 @@ The generated PDB files can be visualized interactively using
 
 References
 ----------
-(1) Bending and curvature calculations in B-DNA.
-    Goodsell DS, Dickerson RE. Nucleic Acids Res 22, 5497-503, 1994.
-    See also http://mgl.scripps.edu/people/goodsell/research/bend/
-(2) Curved DNA without A-A: experimental estimation of all 16 DNA wedge angles.
-    Bolshoy A et al. Proc Natl Acad Sci USA 88, 2312-6, 1991.
-(3) A comparison of six DNA bending models.
-    Tan RK and Harvey SC. J Biomol Struct Dyn 5, 497-512, 1987.
-(4) Curved DNA: design, synthesis, and circularization.
-    Ulanovsky L et al. Proc Natl Acad Sci USA 83, 862-6, 1986.
-(5) The ten helical twist angles of B-DNA.
-    Kabsch W, Sander C, and Trifonov EN. Nucleic Acids Res 10, 1097-1104, 1982.
-(6) Rod models of DNA: sequence-dependent anisotropic elastic modelling of
-    local bending phenomena.
-    Munteanu MG et al. Trends Biochem Sci 23(9), 341-7, 1998.
+1. Bending and curvature calculations in B-DNA.
+   Goodsell DS, Dickerson RE. Nucleic Acids Res 22, 5497-503, 1994.
+   See also http://mgl.scripps.edu/people/goodsell/research/bend/
+2. Curved DNA without A-A: experimental estimation of all 16 DNA wedge angles.
+   Bolshoy A et al. Proc Natl Acad Sci USA 88, 2312-6, 1991.
+3. A comparison of six DNA bending models.
+   Tan RK and Harvey SC. J Biomol Struct Dyn 5, 497-512, 1987.
+4. Curved DNA: design, synthesis, and circularization.
+   Ulanovsky L et al. Proc Natl Acad Sci USA 83, 862-6, 1986.
+5. The ten helical twist angles of B-DNA.
+   Kabsch W, Sander C, and Trifonov EN. Nucleic Acids Res 10, 1097-1104, 1982.
+6. Rod models of DNA: sequence-dependent anisotropic elastic modelling of
+   local bending phenomena.
+   Munteanu MG et al. Trends Biochem Sci 23(9), 341-7, 1998.
 
 Examples
 --------
 >>> from dnacurve import CurvedDNA
 >>> result = CurvedDNA('ATGCAAATTG'*5, 'trifonov', name='Example')
 >>> result.curvature[:, 18:22]
-array([[ 0.58061616,  0.58163338,  0.58277938,  0.583783  ],
-       [ 0.08029914,  0.11292516,  0.07675816,  0.03166286],
-       [ 0.57923902,  0.57580064,  0.57367815,  0.57349872]])
+array([[0.58062, 0.58163, 0.58278, 0.58378],
+       [0.0803 , 0.11293, 0.07676, 0.03166],
+       [0.57924, 0.5758 , 0.57368, 0.5735 ]])
 >>> result.save_csv('_test.csv')
 >>> result.save_pdb('_test.pdb')
 >>> result.plot('_test.png', dpi=160)
