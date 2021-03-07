@@ -1,6 +1,6 @@
 # dnacurve_web.py
 
-# Copyright (c) 2005-2020, Christoph Gohlke
+# Copyright (c) 2005-2021, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,16 +37,18 @@ Run ``python dnacurve_web.py`` to execute the script in a local web server.
 
 :License: BSD 3-Clause
 
-:Version: 2020.1.1
+:Version: 2021.3.6
 
 Requirements
 ------------
 * `Python >= 3.6 <http://www.python.org>`_
-* `Dnacurve.py 2020.1.1 <https://www.lfd.uci.edu/~gohlke/>`_
+* `Dnacurve.py 2021.3.6 <https://www.lfd.uci.edu/~gohlke/>`_
 * A JavaScript enabled web browser.
 
 Revisions
 ---------
+2021.3.6
+    Update copyright and formatting.
 2020.1.1
     Fix csv file extension.
     Remove support for Python 2.7 and 3.5.
@@ -73,7 +75,7 @@ Revisions
 
 """
 
-__version__ = '2020.1.1'
+__version__ = '2021.3.6'
 
 import os
 import sys
@@ -233,8 +235,15 @@ download='{fname}.pdb'>Helix coordinates</a> (PDB format)</li>
 </ul>"""
 
 
-def response(form, url, template=PAGE, help=HELP, maxlen=dnacurve.MAXLEN,
-             analyze_function=None, heads=''):
+def response(
+    form,
+    url,
+    template=PAGE,
+    help=HELP,
+    maxlen=dnacurve.MAXLEN,
+    analyze_function=None,
+    heads='',
+):
     """Return HTML document from submitted form data."""
     seq = form.get('seq', '').strip()
     mod = form.get('mod', '')
@@ -315,7 +324,7 @@ def analyze(sequence, model, maxlen, template=RESULTS, imageformat='svg'):
         csv=csv,
         fname=fname,
         mime=mime,
-        imageext=imageformat
+        imageext=imageformat,
     )
 
 
@@ -325,7 +334,7 @@ def b64encode(s):
         s = s.encode('ascii')
     except Exception:
         pass
-    return base64.b64encode(s).decode(encoding='utf-8', errors='strict')
+    return base64.b64encode(s).decode(errors='strict')
 
 
 def main(url='http://localhost:9000/{}'):
@@ -353,7 +362,7 @@ def main(url='http://localhost:9000/{}'):
         from http.server import HTTPServer, CGIHTTPRequestHandler
 
         def is_cgi(self):
-            """Monkey patch for CGIHTTPRequestHandler.is_cgi()."""
+            """Monkey patch for CGIHTTPRequestHandler.is_cgi."""
             if filename in self.path:
                 self.cgi_info = '', self.path[1:]
                 return True
