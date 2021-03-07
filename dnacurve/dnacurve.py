@@ -1,6 +1,6 @@
 # dnacurve.py
 
-# Copyright (c) 1994-2020, Christoph Gohlke
+# Copyright (c) 1994-2021, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -42,16 +42,18 @@ For command line usage run ``python -m dnacurve --help``
 
 :License: BSD 3-Clause
 
-:Version: 2020.1.1
+:Version: 2021.3.6
 
 Requirements
 ------------
 * `CPython >= 3.6 <https://www.python.org>`_
-* `Numpy 1.14 <https://www.numpy.org>`_
-* `Matplotlib 3.1 <https://www.matplotlib.org>`_
+* `Numpy 1.15.1 <https://www.numpy.org>`_
+* `Matplotlib 3.2 <https://www.matplotlib.org>`_
 
 Revisions
 ---------
+2021.3.6
+    Update copyright and formatting.
 2020.1.1
     Remove support for Python 2.7 and 3.5.
     Update copyright.
@@ -118,13 +120,23 @@ array([[0.58062, 0.58163, 0.58278, 0.58378],
 
 """
 
-__version__ = '2020.1.1'
+__version__ = '2021.3.6'
 
 __all__ = (
-    'CurvedDNA', 'Model', 'Sequence', 'MODELS', 'MAXLEN', 'main',
-    'complementary', 'oligonucleotides', 'unique_oligos', 'chunks',
-    'overlapping_chunks', 'dinuc_window', 'dinucleotide_matrix',
-    'superimpose_matrix'
+    'CurvedDNA',
+    'Model',
+    'Sequence',
+    'MODELS',
+    'MAXLEN',
+    'main',
+    'complementary',
+    'oligonucleotides',
+    'unique_oligos',
+    'chunks',
+    'overlapping_chunks',
+    'dinuc_window',
+    'dinucleotide_matrix',
+    'superimpose_matrix',
 )
 
 import sys
@@ -204,9 +216,16 @@ class CurvedDNA:
         2.08,  # distance from basepair plane
     )
 
-    def __init__(self, sequence, model='trifonov', name='Untitled',
-                 curvature_window=10, bend_window=2, curve_window=15,
-                 maxlen=MAXLEN):
+    def __init__(
+        self,
+        sequence,
+        model='trifonov',
+        name='Untitled',
+        curvature_window=10,
+        bend_window=2,
+        curve_window=15,
+        maxlen=MAXLEN,
+    ):
         """Initialize instance from sequence and model.
 
         Parameters
@@ -271,9 +290,13 @@ class CurvedDNA:
     def _coordinates(self):
         """Calculate coordinates and normal vectors from sequence and model."""
         p = self.P_COORDINATES
-        p = numpy.array((p[0] * math.cos(math.radians(p[1])),
-                         p[0] * math.sin(math.radians(p[1])),
-                         p[2]))
+        p = numpy.array(
+            (
+                p[0] * math.cos(math.radians(p[1])),
+                p[0] * math.sin(math.radians(p[1])),
+                p[2],
+            )
+        )
 
         xyz = self.coordinates
         xyz[0:3, :, 3] = 1.0  # homogeneous coordinates
@@ -284,7 +307,7 @@ class CurvedDNA:
         matrices = self.model.matrices
         dot = numpy.dot
         for i, seq in enumerate(dinuc_window(self.sequence, self.model.order)):
-            xyz[:4, :i + 1, :] = dot(xyz[:4, :i + 1, :], matrices[seq])
+            xyz[:4, : i + 1, :] = dot(xyz[:4, : i + 1, :], matrices[seq])
 
         # Average direction vector of one helix turn,
         # calculated by smoothing the basepair normals
@@ -357,10 +380,12 @@ class CurvedDNA:
             normals = self.coordinates[3, :, 0:3]
             result = self.curvature[1, :]
             for i in range(window, len(self) - window):
-                if not numpy.allclose(normals[i - window],
-                                      normals[i + window]):
-                    result[i] = arccos(dot(normals[i - window],
-                                           normals[i + window]))
+                if not numpy.allclose(
+                    normals[i - window], normals[i + window]
+                ):
+                    result[i] = arccos(
+                        dot(normals[i - window], normals[i + window])
+                    )
 
         # curvature angles from smoothed basepair normals
         window = self.windows[2]
@@ -368,10 +393,12 @@ class CurvedDNA:
             normals = self.coordinates[4, :, 0:3]
             result = self.curvature[2, :]
             for i in range(window, len(self) - window):
-                if not numpy.allclose(normals[i - window],
-                                      normals[i + window]):
-                    result[i] = arccos(dot(normals[i - window],
-                                           normals[i + window]))
+                if not numpy.allclose(
+                    normals[i - window], normals[i + window]
+                ):
+                    result[i] = arccos(
+                        dot(normals[i - window], normals[i + window])
+                    )
 
         self.curvature = numpy.nan_to_num(self.curvature)
 
@@ -404,9 +431,12 @@ class CurvedDNA:
             'Basepair Normal [x],Basepair Normal [y],Basepair Normal [z],'
             'Smoothed Normal [x],Smoothed Normal [y],Smoothed Normal [z]'
             '\n'.format(
-                self.scales[0, 0], self.windows[0],
-                self.scales[1, 0], self.windows[1],
-                self.scales[2, 0], self.windows[2],
+                self.scales[0, 0],
+                self.windows[0],
+                self.scales[1, 0],
+                self.windows[1],
+                self.scales[2, 0],
+                self.windows[2],
             )
         ]
         for i in range(len(self)):
@@ -429,9 +459,9 @@ class CurvedDNA:
         seq = self.sequence
         xyz = self.coordinates[0:3, :, 0:3]
         xyz = xyz - xyz.min(axis=1).min(axis=0)
-        for j, (name, chain, element) in enumerate((('XA', 'A', 'C'),
-                                                    ('P', 'B', 'P'),
-                                                    ('P', 'C', 'P'))):
+        for j, (name, chain, element) in enumerate(
+            (('XA', 'A', 'C'), ('P', 'B', 'P'), ('P', 'C', 'P'))
+        ):
             for i in range(len(self)):
                 x, y, z = xyz[j, i, 0:3]
                 pdb.append(
@@ -479,12 +509,19 @@ class CurvedDNA:
         ax = fig.add_subplot(321)
         ax.set_title(
             f'Sequence: {self.sequence.name}\nModel: {self.model.name}',
-            x=0, horizontalalignment='left', size=11
+            x=0,
+            horizontalalignment='left',
+            size=11,
         )
         ax.text(
-            0., 0.95, self.sequence.format(line=3), family='monospace',
-            size=7, verticalalignment='top', horizontalalignment='left',
-            transform=ax.transAxes
+            0.0,
+            0.95,
+            self.sequence.format(line=3),
+            family='monospace',
+            size=7,
+            verticalalignment='top',
+            horizontalalignment='left',
+            transform=ax.transAxes,
         )
         ax.set_axis_off()
         ax.axis('image')
@@ -498,14 +535,35 @@ class CurvedDNA:
             ax.set_title(f'{axes[0]}-{axes[1]}', size=11)
             ax0, ax1 = (ord(a) - 88 for a in axes)
             # TODO: sort lines by depth and draw back to front
-            ax.plot(xyz[1, :, ax0], xyz[1, :, ax1], 'r-',
-                    xyz[2, :, ax0], xyz[2, :, ax1], 'b-',
-                    xyz[0, :, ax0], xyz[0, :, ax1], 'k-', lw=0.8)
+            ax.plot(
+                xyz[1, :, ax0],
+                xyz[1, :, ax1],
+                'r-',
+                xyz[2, :, ax0],
+                xyz[2, :, ax1],
+                'b-',
+                xyz[0, :, ax0],
+                xyz[0, :, ax1],
+                'k-',
+                lw=0.8,
+            )
             if label:
-                ax.text(xyz[1, 0, ax0], xyz[1, 0, ax1], "5'",
-                        color='darkred', clip_on=True, size=10)
-                ax.text(xyz[1, -1, ax0], xyz[1, -1, ax1], "3'",
-                        color='darkred', clip_on=True, size=10)
+                ax.text(
+                    xyz[1, 0, ax0],
+                    xyz[1, 0, ax1],
+                    "5'",
+                    color='darkred',
+                    clip_on=True,
+                    size=10,
+                )
+                ax.text(
+                    xyz[1, -1, ax0],
+                    xyz[1, -1, ax1],
+                    "3'",
+                    color='darkred',
+                    clip_on=True,
+                    size=10,
+                )
             ax.axis('image')
             ax.axis([-limit, limit, -limit, limit])
             ax.axis('off')
@@ -520,9 +578,13 @@ class CurvedDNA:
 
         def plot_curvature(index, label, style, lw):
             w = self.windows[index]
-            ax.plot(numpy.arange(w, len(self) - w),
-                    self.curvature[index, w:-w], style, lw=lw,
-                    label=label + f' / {self.scales[index, 0]:.4f} [{w}]')
+            ax.plot(
+                numpy.arange(w, len(self) - w),
+                self.curvature[index, w:-w],
+                style,
+                lw=lw,
+                label=label + f' / {self.scales[index, 0]:.4f} [{w}]',
+            )
 
         plot_curvature(0, 'Curvature', 'r-', 0.8)
         plot_curvature(2, 'Curvature Angle', 'b-', 0.8)
@@ -594,13 +656,16 @@ class Model:
 
     """
 
+    # fmt: off
+    # noqa: E201,E222,E241,E251
     STRAIGHT = dict(
         name = 'Straight',
         oligo = 'AA AC AG AT CA GG CG GA GC TA',
         twist = (360.0 / 10.5, ) * 10,
         roll =  (0.0, ) * 10,
         tilt =  (0.0, ) * 10,
-        rise = 3.38)
+        rise = 3.38,
+    )
 
     AAWEDGE = dict(
         name = 'AA Wedge',
@@ -608,7 +673,8 @@ class Model:
         twist = (35.62, 34.4, 27.7, 31.5, 34.5, 33.67, 29.8, 36.9, 40.0, 36.0),
         roll =  (-8.40,  0.0,  0.0,  0.0,  0.0,   0.0,  0.0,  0.0,  0.0,  0.0),
         tilt =  ( 2.40,  0.0,  0.0,  0.0,  0.0,   0.0,  0.0,  0.0,  0.0,  0.0),
-        rise = 3.38)
+        rise = 3.38,
+    )
 
     CALLADINE = dict(
         # Nucleic Acids Res, 1994, 22(24), p 5498, Table 1, Model b.
@@ -617,7 +683,8 @@ class Model:
         twist = (35.0, 34.0, 34.0, 34.0, 34.0, 34.0, 34.0, 34.0, 34.0, 34.0),
         roll =  ( 0.0,  3.3,  3.3,  3.3,  3.3,  3.3,  3.3,  3.3,  3.3,  6.6),
         tilt =  ( 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0),
-        rise = 3.38)
+        rise = 3.38,
+    )
 
     TRIFONOV = dict(
         # Nucleic Acids Res, 1994, 22(24), p 5498, Table 1, Model c.
@@ -626,7 +693,8 @@ class Model:
         twist = (35.62, 34.4, 27.7, 31.5, 34.5, 33.67, 29.8, 36.9, 40.0, 36.0),
         roll =  (-6.50, -0.9,  8.4,  2.6,  1.6,   1.2,  6.7, -2.7, -5.0,  0.9),
         tilt =  ( 3.20, -0.7, -0.3,  0.0,  3.1,  -1.8,  0.0, -4.6,  0.0,  0.0),
-        rise = 3.38)
+        rise = 3.38,
+    )
 
     DESANTIS = dict(
         # Nucleic Acids Res, 1994, 22(24), p 5498, Table 1, Model d.
@@ -635,7 +703,8 @@ class Model:
         twist = (35.9, 34.6, 35.6, 35.0, 34.5, 33.0, 33.7, 35.8, 33.3, 34.6),
         roll =  (-5.4, -2.4,  1.0, -7.3,  6.7,  1.3,  4.6,  2.0, -3.7,  8.0),
         tilt =  (-0.5, -2.7, -1.6,  0.0,  0.4, -0.6,  0.0, -1.7,  0.0,  0.0),
-        rise = 3.38)
+        rise = 3.38,
+    )
 
     REVERSED = dict(
         # Nucleic Acids Res, 1994, 22(24), p 5498, Table 1, Model e.
@@ -644,7 +713,8 @@ class Model:
         twist = (35.0, 34.0, 34.0, 34.0, 34.0, 34.0, 34.0, 34.0, 34.0, 34.0),
         roll =  ( 3.3,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -3.3),
         tilt =  ( 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0),
-        rise = 3.38)
+        rise = 3.38,
+    )
 
     NUCLEOSOME = dict(
         # Nucleic Acids Res, 1994, 22(24), p 5498, Table 1, Model a.
@@ -668,7 +738,8 @@ class Model:
                 5.4, 5.4, 10.0, 10.0, 6.5, 5.4, 7.5, 6.0),
         twist = (34.3, ) * 64,
         tilt =  (0.0, ) * 64,
-        rise = 3.38)
+        rise = 3.38,
+    )
 
     TRINUCLEOTIDE = dict(
         # Trends Biochem Sci, 1998, 23(9), p 341, Table 1, consensus scale.
@@ -692,7 +763,9 @@ class Model:
                 5.50, 5.50, 9.10, 9.10, 6.65, 6.00, 5.90, 5.85),
         twist = (36.0, ) * 64,
         tilt =  (0.0, ) * 64,
-        rise = 3.4)
+        rise = 3.4,
+    )
+    # fmt: on
 
     def __init__(self, model=None, **kwargs):
         """Initialize instance from predefined model, file, or arguments.
@@ -724,10 +797,12 @@ class Model:
 
         """
         if model:
-            for importfunction in (self._fromname,
-                                   self._fromdict,
-                                   self._fromclass,
-                                   self._fromfile):
+            for importfunction in (
+                self._fromname,
+                self._fromdict,
+                self._fromclass,
+                self._fromfile,
+            ):
                 try:
                     # import functions return dictionary or raise exception
                     model = importfunction(model)
@@ -760,8 +835,11 @@ class Model:
                 self.roll[oligo] = self.roll[c]
                 self.tilt[oligo] = -self.tilt[c]  # tilt reverses sign
             self.matrices[oligo] = dinucleotide_matrix(
-                self.rise, self.twist[oligo], self.roll[oligo],
-                self.tilt[oligo]).T
+                self.rise,
+                self.twist[oligo],
+                self.roll[oligo],
+                self.tilt[oligo],
+            ).T
         self.matrices[None] = dinucleotide_matrix(self.rise, 34.3, 0.0, 0.0).T
 
     def __str__(self):
@@ -775,14 +853,16 @@ class Model:
             items = [formatstr.format(item) for item in items]
             return '\n        '.join(sep.join(line) for line in chunks(items))
 
-        return '\n'.join((
-            '{}'.format(self.name.split('\n')[0]),
-            'Rise    {:.2f}'.format(self.rise),
-            'Oligo   ' + format_(oligos, '{}', ' ' * (7 - self.order)),
-            'Twist   ' + format_(self.twist[i] for i in oligos),
-            'Roll    ' + format_(self.roll[i] for i in oligos),
-            'Tilt    ' + format_(self.tilt[i] for i in oligos),
-        ))
+        return '\n'.join(
+            (
+                '{}'.format(self.name.split('\n')[0]),
+                'Rise    {:.2f}'.format(self.rise),
+                'Oligo   ' + format_(oligos, '{}', ' ' * (7 - self.order)),
+                'Twist   ' + format_(self.twist[i] for i in oligos),
+                'Roll    ' + format_(self.roll[i] for i in oligos),
+                'Tilt    ' + format_(self.tilt[i] for i in oligos),
+            )
+        )
 
     def _fromfile(self, path):
         """Return model parameters as dict from file."""
@@ -828,7 +908,7 @@ class Model:
 
 
 class Sequence:
-    """DNA nucleotide sequence.
+    r"""DNA nucleotide sequence.
 
     Attributes
     ----------
@@ -874,7 +954,7 @@ class Sequence:
     PHASED_AAAAAA = 'CGAAAAAACG'
     PHASED_GGGCCC = 'GAGGGCCCTA'
 
-    def __init__(self, arg, name='Untitled', comment='', maxlen=1024*1024):
+    def __init__(self, arg, name='Untitled', comment='', maxlen=1024 * 1024):
         """Initialize instance from nucleotide sequence string or file name."""
         self.name = name
         self.comment = comment
@@ -1016,7 +1096,7 @@ def chunks(sequence, size=10):
     ['ATCGATCGAT', 'CGATCG']
 
     """
-    return [sequence[i:i + size] for i in range(0, len(sequence), size)]
+    return [sequence[i : i + size] for i in range(0, len(sequence), size)]
 
 
 def overlapping_chunks(sequence, size, overlap):
@@ -1030,7 +1110,7 @@ def overlapping_chunks(sequence, size, overlap):
     """
     index = 0
     while index < len(sequence) - 2 * overlap:
-        yield index, sequence[index:index+size+2*overlap]
+        yield index, sequence[index : index + size + 2 * overlap]
         index += size
 
 
@@ -1054,7 +1134,7 @@ def dinuc_window(sequence, size):
     for i in range(0, border - 1):
         yield None
     for i in range(0, len(sequence) - size + 1):
-        yield sequence[i:i + size]
+        yield sequence[i : i + size]
     for i in range(len(sequence) - size + border, len(sequence) - 1):
         yield None
 
@@ -1070,12 +1150,25 @@ def dinucleotide_matrix(rise, twist, roll, tilt):
     tilt = math.radians(-tilt)
     sint = math.sin(tilt)
     cost = math.cos(tilt)
-    return numpy.array((
-        (cost*cosw, sinr*sint*cosw-cosr*sinw, cosr*sint*cosw+sinr*sinw,  0.0),
-        (cost*sinw, sinr*sint*sinw+cosr*cosw, cosr*sint*sinw-sinr*cosw,  0.0),
-        (    -sint,                sinr*cost,                cosr*cost, rise),
-        (      0.0,                      0.0,                      0.0,  1.0)),
-                       dtype='float64')
+    return numpy.array(
+        (
+            (
+                cost * cosw,
+                sinr * sint * cosw - cosr * sinw,
+                cosr * sint * cosw + sinr * sinw,
+                0.0,
+            ),
+            (
+                cost * sinw,
+                sinr * sint * sinw + cosr * cosw,
+                cosr * sint * sinw - sinr * cosw,
+                0.0,
+            ),
+            (-sint, sinr * cost, cosr * cost, rise),
+            (0.0, 0.0, 0.0, 1.0),
+        ),
+        dtype='float64',
+    )
 
 
 def superimpose_matrix(v0, v1):
@@ -1125,26 +1218,60 @@ def main(argv=None):
         prog='dnacurve',
     )
     opt = parser.add_option
-    opt('-m', '--model', dest='model', metavar='MODEL', default='trifonov',
-        help='input model name or file')
-    opt('-n', '--name', dest='name', metavar='NAME', default='Untitled',
-        help='set sequence name')
+    opt(
+        '-m',
+        '--model',
+        dest='model',
+        metavar='MODEL',
+        default='trifonov',
+        help='input model name or file',
+    )
+    opt(
+        '-n',
+        '--name',
+        dest='name',
+        metavar='NAME',
+        default='Untitled',
+        help='set sequence name',
+    )
     opt('--csv', dest='csv', metavar='FILE', help='save results as CSV')
     opt('--pdb', dest='pdb', metavar='FILE', help='save coordinates as PDB')
     opt('--seq', dest='seq', metavar='FILE', help='save nucleotide sequence')
     opt('--png', dest='png', metavar='FILE', help='save plot as PNG image')
     opt('--pdf', dest='pdf', metavar='FILE', help='save plot as PDF')
     opt('--ps', dest='ps', metavar='FILE', help='save plot as PostScript')
-    opt('-p', '--plot', dest='plot', action='store_true', default=False,
-        help='plot to interactive window')
-    opt("--dpi", dest='dpi', type='int', default=96,
-        help='set plot resolution')
-    opt('--web', dest='web', action='store_true', default=False,
-        help='start web application and open it in a web browser')
-    opt('--test', dest='test', action='store_true', default=False,
-        help='analyze a test sequence')
-    opt('--doctest', dest='doctest', action='store_true', default=False,
-        help='run the internal tests')
+    opt(
+        '-p',
+        '--plot',
+        dest='plot',
+        action='store_true',
+        default=False,
+        help='plot to interactive window',
+    )
+    opt(
+        "--dpi", dest='dpi', type='int', default=96, help='set plot resolution'
+    )
+    opt(
+        '--web',
+        dest='web',
+        action='store_true',
+        default=False,
+        help='start web application and open it in a web browser',
+    )
+    opt(
+        '--test',
+        dest='test',
+        action='store_true',
+        default=False,
+        help='analyze a test sequence',
+    )
+    opt(
+        '--doctest',
+        dest='doctest',
+        action='store_true',
+        default=False,
+        help='run the internal tests',
+    )
     opt('-v', '--verbose', dest='verbose', action='store_true', default=True)
     opt('-q', '--quiet', dest='verbose', action='store_false')
 
@@ -1212,7 +1339,7 @@ def main(argv=None):
 
 MODELS = sorted(
     (a for a in dir(Model) if not a.startswith('_') and a.isupper()),
-    key=lambda x: getattr(Model, x)['name']
+    key=lambda x: getattr(Model, x)['name'],
 )
 
 if __name__ == '__main__':
