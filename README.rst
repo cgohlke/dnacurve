@@ -12,16 +12,18 @@ For command line usage run ``python -m dnacurve --help``
 
 :License: BSD 3-Clause
 
-:Version: 2020.1.1
+:Version: 2021.3.6
 
 Requirements
 ------------
 * `CPython >= 3.6 <https://www.python.org>`_
-* `Numpy 1.14 <https://www.numpy.org>`_
-* `Matplotlib 3.1 <https://www.matplotlib.org>`_
+* `Numpy 1.15.1 <https://www.numpy.org>`_
+* `Matplotlib 3.2 <https://www.matplotlib.org>`_
 
 Revisions
 ---------
+2021.3.6
+    Update copyright and formatting.
 2020.1.1
     Remove support for Python 2.7 and 3.5.
     Update copyright.
