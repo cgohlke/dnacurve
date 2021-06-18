@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # dnacurve_web.py
 
 # Copyright (c) 2005-2021, Christoph Gohlke
@@ -31,22 +32,13 @@
 
 """DNA Curvature Analysis - A simple Web interface for dnacurve.py.
 
-Run ``python dnacurve_web.py`` to execute the script in a local web server.
-
-:Author: `Christoph Gohlke <https://www.lfd.uci.edu/~gohlke/>`_
-
-:License: BSD 3-Clause
-
-:Version: 2021.3.6
-
-Requirements
-------------
-* `Python >= 3.6 <http://www.python.org>`_
-* `Dnacurve.py 2021.3.6 <https://www.lfd.uci.edu/~gohlke/>`_
-* A JavaScript enabled web browser.
+Run ``python -m dnacurve --web`` to execute the script in a local web server.
 
 Revisions
 ---------
+2021.6.18
+    Link to source code on GitHub.
+    Fix failures on WSL2.
 2021.3.6
     Update copyright and formatting.
 2020.1.1
@@ -75,7 +67,7 @@ Revisions
 
 """
 
-__version__ = '2021.3.6'
+__version__ = '2021.6.18'
 
 import os
 import sys
@@ -221,8 +213,8 @@ The entire risk as to the quality and performance is with you.</p>
 <h3>About</h3>
 <p>DNA Curvature Analysis version {version} by
 <a href="https://www.lfd.uci.edu/~gohlke/">Christoph Gohlke</a>.
-Source code is available at
-<a href="https://pypi.org/project/dnacurve/">pypi.org</a>.</p>
+Source code is available on
+<a href="https://github.com/cgohlke/dnacurve">GitHub</a>.</p>
 </div>"""
 
 RESULTS = """<!--h2>Results for {fname}</h2-->
