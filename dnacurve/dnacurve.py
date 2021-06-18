@@ -42,16 +42,19 @@ For command line usage run ``python -m dnacurve --help``
 
 :License: BSD 3-Clause
 
-:Version: 2021.3.6
+:Version: 2021.6.18
 
 Requirements
 ------------
-* `CPython >= 3.6 <https://www.python.org>`_
+* `CPython >= 3.7 <https://www.python.org>`_
 * `Numpy 1.15.1 <https://www.numpy.org>`_
 * `Matplotlib 3.2 <https://www.matplotlib.org>`_
 
 Revisions
 ---------
+2021.6.18
+    Remove support for Python 3.6 (NEP 29).
+    Fix dnacurve_web.py failure on WSL2.
 2021.3.6
     Update copyright and formatting.
 2020.1.1
@@ -80,8 +83,6 @@ Revisions
 
 Notes
 -----
-The API is not stable yet and is expected to change between revisions.
-
 The algorithms, plots, and PDB format are not meant to be used with very
 long sequences. By default sequences are truncated to 510 nucleotides,
 which can be overridden by the user.
@@ -120,7 +121,7 @@ array([[0.58062, 0.58163, 0.58278, 0.58378],
 
 """
 
-__version__ = '2021.3.6'
+__version__ = '2021.6.18'
 
 __all__ = (
     'CurvedDNA',
