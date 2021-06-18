@@ -46,7 +46,7 @@ setup(
     long_description=readme,
     author='Christoph Gohlke',
     author_email='cgohlke@uci.edu',
-    url='https://www.lfd.uci.edu/~gohlke/',
+    url='https://www.lfd.uci.edu/~gohlke/dnacurve',
     project_urls={
         'Bug Tracker': 'https://github.com/cgohlke/dnacurve/issues',
         'Source Code': 'https://github.com/cgohlke/dnacurve',
@@ -73,5 +73,6 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
 )
