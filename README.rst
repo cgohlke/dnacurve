@@ -12,7 +12,7 @@ For command line usage run ``python -m dnacurve --help``
 
 :License: BSD 3-Clause
 
-:Version: 2021.6.18
+:Version: 2021.6.29
 
 Requirements
 ------------
@@ -22,6 +22,8 @@ Requirements
 
 Revisions
 ---------
+2021.6.29
+    Improve export to PDB.
 2021.6.18
     Remove support for Python 3.6 (NEP 29).
     Fix dnacurve_web.py failure on WSL2.
@@ -80,11 +82,11 @@ References
 Examples
 --------
 >>> from dnacurve import CurvedDNA
->>> result = CurvedDNA('ATGCAAATTG'*5, 'trifonov', name='Example')
+>>> result = CurvedDNA('ATGCAAATTG' * 5, 'trifonov', name='Example')
 >>> result.curvature[:, 18:22]
 array([[0.58062, 0.58163, 0.58278, 0.58378],
        [0.0803 , 0.11293, 0.07676, 0.03166],
        [0.57924, 0.5758 , 0.57368, 0.5735 ]])
 >>> result.save_csv('_test.csv')
 >>> result.save_pdb('_test.pdb')
->>> result.plot('_test.png', dpi=160)
+>>> result.plot('_test.png', dpi=120)
