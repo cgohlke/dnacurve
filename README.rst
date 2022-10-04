@@ -1,72 +1,133 @@
 DNA Curvature Analysis
 ======================
 
-Dnacurve is a Python library and console script to calculate the global
-3D structure of a B-DNA molecule from its nucleotide sequence according to the
-dinucleotide wedge model. Local bending angles and macroscopic curvature
-are calculated at each nucleotide.
+Dnacurve is a Python library, console script, and web application to calculate
+the global 3D structure of a B-DNA molecule from its nucleotide sequence
+according to the dinucleotide wedge model. Local bending angles and macroscopic
+curvature are calculated at each nucleotide.
 
-For command line usage run ``python -m dnacurve --help``
-
-:Author: `Christoph Gohlke <https://www.lfd.uci.edu/~gohlke/>`_
-
+:Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD 3-Clause
+:Version: 2022.10.4
+:DOI: 10.5281/zenodo.7135499
 
-:Version: 2021.6.29
+Quickstart
+----------
+
+Install the dnacurve package and all dependencies from the
+Python Package Index::
+
+    python -m pip install -U dnacurve[all]
+
+Print the console script usage::
+
+    python -m dnacurve --help
+
+Run the web application::
+
+    python -m dnacurve --web
+
+See `Examples`_ for using the programming interface.
+
+Source code and support are available on
+`GitHub <https://github.com/cgohlke/dnacurve>`_.
 
 Requirements
 ------------
-* `CPython >= 3.7 <https://www.python.org>`_
-* `Numpy 1.15.1 <https://www.numpy.org>`_
-* `Matplotlib 3.2 <https://www.matplotlib.org>`_
+
+This release has been tested with the following requirements and dependencies
+(other versions may work):
+
+- `CPython 3.8.10, 3.9.13, 3.10.7, 3.11.0rc2 <https://www.python.org>`_
+- `Numpy 1.22.4 <https://pypi.org/project/numpy/>`_
+- `Matplotlib 3.5.3 <https://pypi.org/project/matplotlib/>`_
+- `Flask 2.2.2 <https://pypi.org/project/Flask/>`_ (optional)
 
 Revisions
 ---------
+
+2022.10.4
+
+- Rename dnacurve_web.py to web.py (breaking).
+- Deprecate save functions (use write functions).
+- Add options to specify URL of web application and not opening web browser.
+- Run web application using Flask if installed.
+- Convert to Google style docstrings.
+- Add type hints.
+- Remove support for Python 3.7 and numpy < 1.19 (NEP29).
+
 2021.6.29
-    Improve export to PDB.
+
+- Improve export to PDB.
+
 2021.6.18
-    Remove support for Python 3.6 (NEP 29).
-    Fix dnacurve_web.py failure on WSL2.
+
+- Remove support for Python 3.6 (NEP 29).
+- Fix dnacurve_web.py failure on WSL2.
+
 2021.3.6
-    Update copyright and formatting.
+
+- Update copyright and formatting.
+
 2020.1.1
-    Remove support for Python 2.7 and 3.5.
-    Update copyright.
+
+- Remove support for Python 2.7 and 3.5.
+- Update copyright.
+
 2018.8.15
-    Move modules into dnacurve package.
+
+- Move modules into dnacurve package.
+
 2018.5.29
-    Add option to start web interface from console.
-    Use matplotlib OOP interface.
+
+- Add option to start web interface from console.
+- Use matplotlib OOP interface.
+
 2018.5.25
-    Add functions to return PDB and CSV results as string.
+
+- Add functions to return PDB and CSV results as string.
+
 2018.2.6
-    Style and doctest fixes.
+
+- Style and doctest fixes.
+
 2014.6.16
-    DNAse I Consensus model.
+
+- DNAse I Consensus model.
+
 2013.11.21
-    Overlapping chunks iterator.
+
+- Overlapping chunks iterator.
+
 2013.11.17
-    Limit maximum sequence length to 510 nucleotides.
-    Read simple Fasta sequence files.
-    Save positive coordinates to PDB files.
-    Fix sequence display for matplotlib 1.3.
+
+- Limit maximum sequence length to 510 nucleotides.
+- Read simple FASTA sequence files.
+- Save positive coordinates to PDB files.
+- Fix sequence display for matplotlib 1.3.
+
 2005.x.x
-    Initial release.
+
+- Initial release.
 
 Notes
 -----
+
 The algorithms, plots, and PDB format are not meant to be used with very
-long sequences. By default sequences are truncated to 510 nucleotides,
+long sequences. By default, sequences are truncated to 510 nucleotides,
 which can be overridden by the user.
 
 The generated PDB files can be visualized interactively using
 `UCSF Chimera <https://www.cgl.ucsf.edu/chimera/>`_.
 
+Dnacurve.py was derived from DNACG.PAS (c) 1993, and DNACURVE.CPP (c) 1995.
+
 References
 ----------
+
 1. Bending and curvature calculations in B-DNA.
    Goodsell DS, Dickerson RE. Nucleic Acids Res 22, 5497-503, 1994.
-   See also http://mgl.scripps.edu/people/goodsell/research/bend/
+   See also http://mgl.scripps.edu/people/goodsell/research/bend/index.html.
 2. Curved DNA without A-A: experimental estimation of all 16 DNA wedge angles.
    Bolshoy A et al. Proc Natl Acad Sci USA 88, 2312-6, 1991.
 3. A comparison of six DNA bending models.
@@ -81,12 +142,13 @@ References
 
 Examples
 --------
+
 >>> from dnacurve import CurvedDNA
 >>> result = CurvedDNA('ATGCAAATTG' * 5, 'trifonov', name='Example')
 >>> result.curvature[:, 18:22]
 array([[0.58062, 0.58163, 0.58278, 0.58378],
        [0.0803 , 0.11293, 0.07676, 0.03166],
        [0.57924, 0.5758 , 0.57368, 0.5735 ]])
->>> result.save_csv('_test.csv')
->>> result.save_pdb('_test.pdb')
+>>> result.write_csv('_test.csv')
+>>> result.write_pdb('_test.pdb')
 >>> result.plot('_test.png', dpi=120)
