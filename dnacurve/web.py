@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # dnacurve/web.py
 
-# Copyright (c) 2005-2022, Christoph Gohlke
+# Copyright (c) 2005-2023, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -58,8 +58,6 @@ Instead, for example, create a Flask app and serve it on a production server::
 """
 
 from __future__ import annotations
-
-__version__ = '2022.10.4'
 
 __all__ = ['main', 'response']
 
