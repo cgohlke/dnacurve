@@ -1,4 +1,4 @@
-DNA Curvature Analysis
+DNA curvature analysis
 ======================
 
 Dnacurve is a Python library, console script, and web application to calculate
@@ -8,14 +8,14 @@ curvature are calculated at each nucleotide.
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD 3-Clause
-:Version: 2022.10.4
-:DOI: 10.5281/zenodo.7135499
+:Version: 2023.4.30
+:DOI: `10.5281/zenodo.7135499 <https://doi.org/10.5281/zenodo.7135499>`_
 
 Quickstart
 ----------
 
 Install the dnacurve package and all dependencies from the
-Python Package Index::
+`Python Package Index <https://pypi.org/project/dnacurve/>`_::
 
     python -m pip install -U dnacurve[all]
 
@@ -35,16 +35,21 @@ Source code and support are available on
 Requirements
 ------------
 
-This release has been tested with the following requirements and dependencies
+This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython 3.8.10, 3.9.13, 3.10.7, 3.11.0rc2 <https://www.python.org>`_
-- `Numpy 1.22.4 <https://pypi.org/project/numpy/>`_
-- `Matplotlib 3.5.3 <https://pypi.org/project/matplotlib/>`_
-- `Flask 2.2.2 <https://pypi.org/project/Flask/>`_ (optional)
+- `CPython <https://www.python.org>`_ 3.9.13, 3.10.11, 3.11.3
+- `Numpy <https://pypi.org/project/numpy/>`_ 1.23.5
+- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.7.1
+- `Flask <https://pypi.org/project/Flask/>`_ 2.3.1 (optional)
 
 Revisions
 ---------
+
+2023.4.30
+
+- Improve type hints.
+- Drop support for Python 3.8 and numpy < 1.21 (NEP29).
 
 2022.10.4
 
