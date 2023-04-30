@@ -63,8 +63,7 @@ setup(
         # 'Documentation': 'https://',
     },
     packages=['dnacurve'],
-    python_requires='>=3.8',
-    install_requires=['numpy>=1.19.2', 'matplotlib'],
+    install_requires=['numpy', 'matplotlib'],
     extras_require={'all': ['Flask']},
     entry_points={
         'console_scripts': [
@@ -73,6 +72,7 @@ setup(
         ]
     },
     platforms=['any'],
+    python_requires='>=3.8',
     classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: BSD License',
@@ -80,7 +80,6 @@ setup(
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
