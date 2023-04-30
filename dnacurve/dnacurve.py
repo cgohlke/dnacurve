@@ -1,6 +1,6 @@
 # dnacurve.py
 
-# Copyright (c) 1993-2022, Christoph Gohlke
+# Copyright (c) 1993-2023, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""DNA Curvature Analysis.
+"""DNA curvature analysis.
 
 Dnacurve is a Python library, console script, and web application to calculate
 the global 3D structure of a B-DNA molecule from its nucleotide sequence
@@ -38,14 +38,14 @@ curvature are calculated at each nucleotide.
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD 3-Clause
-:Version: 2022.10.4
-:DOI: 10.5281/zenodo.7135499
+:Version: 2023.4.30
+:DOI: `10.5281/zenodo.7135499 <https://doi.org/10.5281/zenodo.7135499>`_
 
 Quickstart
 ----------
 
 Install the dnacurve package and all dependencies from the
-Python Package Index::
+`Python Package Index <https://pypi.org/project/dnacurve/>`_::
 
     python -m pip install -U dnacurve[all]
 
@@ -65,16 +65,21 @@ Source code and support are available on
 Requirements
 ------------
 
-This release has been tested with the following requirements and dependencies
+This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython 3.8.10, 3.9.13, 3.10.7, 3.11.0rc2 <https://www.python.org>`_
-- `Numpy 1.22.4 <https://pypi.org/project/numpy/>`_
-- `Matplotlib 3.5.3 <https://pypi.org/project/matplotlib/>`_
-- `Flask 2.2.2 <https://pypi.org/project/Flask/>`_ (optional)
+- `CPython <https://www.python.org>`_ 3.9.13, 3.10.11, 3.11.3
+- `Numpy <https://pypi.org/project/numpy/>`_ 1.23.5
+- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.7.1
+- `Flask <https://pypi.org/project/Flask/>`_ 2.3.1 (optional)
 
 Revisions
 ---------
+
+2023.4.30
+
+- Improve type hints.
+- Drop support for Python 3.8 and numpy < 1.21 (NEP29).
 
 2022.10.4
 
@@ -187,7 +192,7 @@ array([[0.58062, 0.58163, 0.58278, 0.58378],
 
 from __future__ import annotations
 
-__version__ = '2022.10.4'
+__version__ = '2023.4.30'
 
 __all__ = [
     'CurvedDNA',
@@ -218,7 +223,9 @@ import numpy
 from typing import TYPE_CHECKING, overload
 
 if TYPE_CHECKING:
-    from typing import Any, BinaryIO, Iterable, Iterator
+    from typing import Any, BinaryIO
+    from collections.abc import Iterable, Iterator
+    from numpy.typing import NDArray
 
 MAXLEN: int = 510
 """Maximum length of sequences to analyze."""
@@ -286,7 +293,7 @@ class CurvedDNA:
     2. distance from basepair plane
     """
 
-    coordinates: numpy.ndarray
+    coordinates: NDArray[Any]
     """Homogeneous coordinates at each nucleotide of:
 
     0. helix axis
@@ -296,7 +303,7 @@ class CurvedDNA:
     4. smoothed basepair normal vector
     """
 
-    curvature: numpy.ndarray
+    curvature: NDArray[Any]
     """Values at each nucleotide relative to curvature in nucleosome:
 
     0. curvature
@@ -304,7 +311,7 @@ class CurvedDNA:
     2. curvature angle
     """
 
-    scales: numpy.ndarray
+    scales: NDArray[Any]
     """Scaling factors used to normalize curvature array."""
 
     windows: tuple[int, int, int]
@@ -319,9 +326,9 @@ class CurvedDNA:
 
     def __init__(
         self,
-        sequence: Sequence | os.PathLike | str,
+        sequence: Sequence | os.PathLike[Any] | str,
         /,
-        model: Model | os.PathLike | str = 'trifonov',
+        model: Model | os.PathLike[Any] | str = 'trifonov',
         name: str = 'Untitled',
         curvature_window: int = 10,
         bend_window: int = 2,
@@ -388,16 +395,16 @@ class CurvedDNA:
 
     def _reorient(self) -> None:
         """Reorient coordinates."""
-        xyz: numpy.ndarray = self.coordinates[0, :, 0:3]  # helix axis
+        xyz: NDArray[Any] = self.coordinates[0, :, 0:3]  # helix axis
         xyz = xyz - xyz[-1]
         # assert start point is at origin
         assert numpy.allclose(xyz[-1], (0, 0, 0))
         # normalized end to end vector
-        e: numpy.ndarray = +xyz[0]
+        e: NDArray[Any] = +xyz[0]
         e_len = norm(e)
         e /= e_len
         # point i of maximum distance to end to end line
-        t: numpy.ndarray = numpy.cross(e, xyz)
+        t: NDArray[Any] = numpy.cross(e, xyz)
         t = numpy.sum(t * t, axis=1)
         i = numpy.argmax(t)
         x = math.sqrt(t[i])
@@ -406,12 +413,12 @@ class CurvedDNA:
         # distance of endpoint to point on end to end line nearest to xyz[i]
         u = math.sqrt(w * w - x * x)
         # find transformation matrix
-        v0: numpy.ndarray = xyz[[0, i, -1]]  # type: ignore
-        v1: numpy.ndarray = numpy.array(
+        v0: NDArray[Any] = xyz[[0, i, -1]]  # type: ignore
+        v1: NDArray[Any] = numpy.array(
             ((0, 0, 0), (e_len - u, 0, x), (e_len, 0, 0))
         )
         M = superimpose_matrix(v0, v1)
-        self.coordinates: numpy.ndarray = numpy.dot(self.coordinates, M.T)
+        self.coordinates: NDArray[Any] = numpy.dot(self.coordinates, M.T)
 
     def _center(self) -> None:
         """Center atomic coordinates at origin."""
@@ -478,7 +485,7 @@ class CurvedDNA:
         self.scales[1:] = 0.0234 * 2 * self.windows[2] * self.model.rise
         self.curvature /= self.scales
 
-    def write_csv(self, path: os.PathLike | str, /) -> None:
+    def write_csv(self, path: os.PathLike[Any] | str, /) -> None:
         """Write coordinates and curvature values to CSV file.
 
         Parameters:
@@ -488,11 +495,11 @@ class CurvedDNA:
         with open(path, 'w', newline='\r\n') as fh:
             fh.write(self.csv())
 
-    def save_csv(self, path):
+    def save_csv(self, path: os.PathLike[Any] | str) -> None:
         # deprecated
-        return self.write_csv(path)
+        self.write_csv(path)
 
-    def write_pdb(self, path: os.PathLike | str, /) -> None:
+    def write_pdb(self, path: os.PathLike[Any] | str, /) -> None:
         """Write atomic coordinates to PDB file.
 
         Parameters:
@@ -502,9 +509,9 @@ class CurvedDNA:
         with open(path, 'w', newline='\n') as fh:
             fh.write(self.pdb())
 
-    def save_pdb(self, path):
+    def save_pdb(self, path: os.PathLike[Any] | str) -> None:
         # deprecated
-        return self.write_pdb(path)
+        self.write_pdb(path)
 
     def csv(self) -> str:
         """Return coordinates and curvature values in CSV format."""
@@ -592,12 +599,12 @@ class CurvedDNA:
 
     def plot(
         self,
-        arg: str | os.PathLike | BinaryIO | bool = True,
+        arg: str | os.PathLike[Any] | BinaryIO | bool = True,
         /,
         dpi: int = 96,
         figsize: tuple[float, float] = (6.0, 7.5),
         imageformat: str | None = None,
-    ) -> None:
+    ) -> Any:
         """Plot results using matplotlib.
 
         Parameters:
@@ -943,14 +950,14 @@ class Model:
     tilt: dict[str, float]
     """Rotation angle in deg about the X axis for all oligonucleotides."""
 
-    matrices: dict[str | None, numpy.ndarray]
+    matrices: dict[str | None, NDArray[Any]]
     """Homogeneous transformation matrices for all oligonucleotides."""
 
     def __init__(
         self,
-        model: Model | dict[str, Any] | os.PathLike | str | None = None,
+        model: Model | dict[str, Any] | os.PathLike[Any] | str | None = None,
         /,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         modeldict: dict[str, Any]
         if model:
@@ -1000,7 +1007,7 @@ class Model:
             ).T
         self.matrices[None] = dinucleotide_matrix(self.rise, 34.3, 0.0, 0.0).T
 
-    def _fromfile(self, path: os.PathLike | str, /) -> dict[str, Any]:
+    def _fromfile(self, path: os.PathLike[Any] | str, /) -> dict[str, Any]:
         """Return model parameters as dict from file."""
         d: dict[str, Any] = {}
         with open(path) as fh:
@@ -1027,7 +1034,7 @@ class Model:
 
     def _fromname(self, name: str, /) -> dict[str, Any]:
         """Return predefined model parameters as dict."""
-        return getattr(Model, name.upper())
+        return getattr(Model, name.upper())  # type: ignore
 
     def _fromclass(self, aclass: Model, /) -> dict[str, Any]:
         """Return model parameters as dict from class."""
@@ -1039,14 +1046,14 @@ class Model:
             adict[attr]  # noqa: validation
         return adict
 
-    def write(self, path: os.PathLike | str, /) -> None:
+    def write(self, path: os.PathLike[Any] | str, /) -> None:
         """Write model to file."""
         with open(path, 'w', newline='\n') as fh:
             fh.write(str(self))
 
-    def save(self, path):
+    def save(self, path: os.PathLike[Any] | str, /) -> None:
         # deprecated
-        return self.write(path)
+        self.write(path)
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} {self.name!r}>'
@@ -1132,7 +1139,7 @@ class Sequence:
 
     def __init__(
         self,
-        arg: os.PathLike | str,
+        arg: os.PathLike[Any] | str,
         /,
         name: str = 'Untitled',
         comment: str = '',
@@ -1165,7 +1172,9 @@ class Sequence:
         if not self._sequence:
             raise ValueError('not a valid sequence')
 
-    def _fromfile(self, path: os.PathLike | str, /, maxsize: int = -1) -> None:
+    def _fromfile(
+        self, path: os.PathLike[Any] | str, /, maxsize: int = -1
+    ) -> None:
         """Read name, comment and sequence from file."""
         with open(path) as fh:
             firstline = fh.readline().rstrip()
@@ -1176,7 +1185,7 @@ class Sequence:
                 self.comment = fh.readline()
             self._sequence = fh.read(maxsize)
 
-    def write(self, path: os.PathLike | str, /) -> None:
+    def write(self, path: os.PathLike[Any] | str, /) -> None:
         """Write sequence to file.
 
         Parameters:
@@ -1186,9 +1195,9 @@ class Sequence:
         with open(path, 'w', newline='\n') as fh:
             fh.write(f'{self.name}\n{self.comment}\n{self.format()}')
 
-    def save(self, path):
+    def save(self, path: os.PathLike[Any] | str, /) -> None:
         # deprecated
-        return self.write(path)
+        self.write(path)
 
     @property
     def string(self) -> str:
@@ -1231,7 +1240,7 @@ class Sequence:
             f'length={len(self._sequence)!r}>'
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.name}\n{self.comment}\n{self.format()}'
 
 
@@ -1388,7 +1397,7 @@ def dinuc_window(
 
 def dinucleotide_matrix(
     rise: float, twist: float, roll: float, tilt: float, /
-) -> numpy.ndarray:
+) -> NDArray[Any]:
     """Return transformation matrix to move from one nucleotide to next.
 
     Parameters:
@@ -1428,9 +1437,7 @@ def dinucleotide_matrix(
     )
 
 
-def superimpose_matrix(
-    v0: numpy.ndarray, v1: numpy.ndarray, /
-) -> numpy.ndarray:
+def superimpose_matrix(v0: NDArray[Any], v1: NDArray[Any], /) -> NDArray[Any]:
     """Return matrix to transform given vector set to second vector set.
 
     Parameters:
@@ -1459,7 +1466,7 @@ def superimpose_matrix(
     return numpy.dot(M, T)
 
 
-def norm(vector: numpy.ndarray, /) -> float:
+def norm(vector: NDArray[Any], /) -> float:
     """Return length of vector, i.e., its euclidean norm.
 
     Parameters:
@@ -1483,8 +1490,13 @@ def main(argv: list[str] | None = None, /) -> int:
     # TODO: use argparse module
     import optparse
 
-    def search_doc(r, d):
-        return re.search(r, __doc__).group(1) if __doc__ else d
+    def search_doc(r: str, d: str) -> str:
+        if not __doc__:
+            return d
+        match = re.search(r, __doc__)
+        if match is None:
+            return d
+        return match.group(1)
 
     parser = optparse.OptionParser(
         usage='usage: %prog [options] sequence | file',
@@ -1633,7 +1645,7 @@ def main(argv: list[str] | None = None, /) -> int:
 MODELS.extend(
     sorted(
         (a for a in dir(Model) if not a.startswith('_') and a.isupper()),
-        key=lambda x: getattr(Model, x)['name'],
+        key=lambda x: getattr(Model, x)['name'],  # type: ignore
     )
 )
 
