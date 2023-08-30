@@ -38,7 +38,7 @@ curvature are calculated at each nucleotide.
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD 3-Clause
-:Version: 2023.4.30
+:Version: 2023.8.30
 :DOI: `10.5281/zenodo.7135499 <https://doi.org/10.5281/zenodo.7135499>`_
 
 Quickstart
@@ -68,13 +68,18 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.9.13, 3.10.11, 3.11.3
-- `Numpy <https://pypi.org/project/numpy/>`_ 1.23.5
-- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.7.1
-- `Flask <https://pypi.org/project/Flask/>`_ 2.3.1 (optional)
+- `CPython <https://www.python.org>`_ 3.9.13, 3.10.11, 3.11.5, 3.12rc
+- `Numpy <https://pypi.org/project/numpy/>`_ 1.25.2
+- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.7.2
+- `Flask <https://pypi.org/project/Flask/>`_ 2.3.3 (optional)
 
 Revisions
 ---------
+
+2023.8.30
+
+- Fix linting issues.
+- Add py.typed marker.
 
 2023.4.30
 
@@ -192,7 +197,7 @@ array([[0.58062, 0.58163, 0.58278, 0.58378],
 
 from __future__ import annotations
 
-__version__ = '2023.4.30'
+__version__ = '2023.8.30'
 
 __all__ = [
     'CurvedDNA',
@@ -211,20 +216,20 @@ __all__ = [
     'unique_oligos',
 ]
 
-import sys
+import datetime
+import math
 import os
 import re
-import math
-import datetime
+import sys
 import warnings
+from typing import TYPE_CHECKING, overload
 
 import numpy
 
-from typing import TYPE_CHECKING, overload
-
 if TYPE_CHECKING:
-    from typing import Any, BinaryIO
     from collections.abc import Iterable, Iterator
+    from typing import Any, BinaryIO
+
     from numpy.typing import NDArray
 
 MAXLEN: int = 510
@@ -492,7 +497,7 @@ class CurvedDNA:
             path: Name of CSV file to write.
 
         """
-        with open(path, 'w', newline='\r\n') as fh:
+        with open(path, 'w', encoding='latin-1', newline='\r\n') as fh:
             fh.write(self.csv())
 
     def save_csv(self, path: os.PathLike[Any] | str) -> None:
@@ -506,7 +511,7 @@ class CurvedDNA:
             path: Name of PDB file to write.
 
         """
-        with open(path, 'w', newline='\n') as fh:
+        with open(path, 'w', encoding='latin-1', newline='\n') as fh:
             fh.write(self.pdb())
 
     def save_pdb(self, path: os.PathLike[Any] | str) -> None:
@@ -620,7 +625,8 @@ class CurvedDNA:
             figsize:
                 Matplotlib figure size.
             imageformat:
-                Image file format of the figure, e.g., 'png', 'pdf', 'svg'.
+                Image file format of the figure, such as, 'png', 'pdf',
+                or 'svg'.
 
         """
         if not arg:
@@ -930,7 +936,7 @@ class Model:
     """Name of model."""
 
     order: int
-    """Order of model, i.e., length of oligonucleotides.
+    """Order of model, that is, length of oligonucleotides.
 
     Order 2 is a dinucleotide model, order 3 a trinucleotide model.
     """
@@ -1010,7 +1016,7 @@ class Model:
     def _fromfile(self, path: os.PathLike[Any] | str, /) -> dict[str, Any]:
         """Return model parameters as dict from file."""
         d: dict[str, Any] = {}
-        with open(path) as fh:
+        with open(path, encoding='latin-1') as fh:
             d['name'] = fh.readline().rstrip()
             d['rise'] = float(fh.readline().split()[-1])
 
@@ -1048,7 +1054,7 @@ class Model:
 
     def write(self, path: os.PathLike[Any] | str, /) -> None:
         """Write model to file."""
-        with open(path, 'w', newline='\n') as fh:
+        with open(path, 'w', encoding='latin-1', newline='\n') as fh:
             fh.write(str(self))
 
     def save(self, path: os.PathLike[Any] | str, /) -> None:
@@ -1074,7 +1080,7 @@ class Model:
 
         return '\n'.join(
             (
-                '{}'.format(self.name.split('\n')[0]),
+                self.name.split('\n', maxsplit=1)[0],
                 f'Rise    {self.rise:.2f}',
                 'Oligo   ' + format_(oligos, '{}', ' ' * (7 - self.order)),
                 'Twist   ' + format_(self.twist[i] for i in oligos),
@@ -1176,7 +1182,7 @@ class Sequence:
         self, path: os.PathLike[Any] | str, /, maxsize: int = -1
     ) -> None:
         """Read name, comment and sequence from file."""
-        with open(path) as fh:
+        with open(path, encoding='latin-1') as fh:
             firstline = fh.readline().rstrip()
             if firstline.startswith('>'):  # FASTA format
                 self.name, self.comment = (firstline[1:] + ' ').split(' ', 1)
@@ -1192,7 +1198,7 @@ class Sequence:
             path: Name of file to write.
 
         """
-        with open(path, 'w', newline='\n') as fh:
+        with open(path, 'w', encoding='latin-1', newline='\n') as fh:
             fh.write(f'{self.name}\n{self.comment}\n{self.format()}')
 
     def save(self, path: os.PathLike[Any] | str, /) -> None:
@@ -1467,7 +1473,7 @@ def superimpose_matrix(v0: NDArray[Any], v1: NDArray[Any], /) -> NDArray[Any]:
 
 
 def norm(vector: NDArray[Any], /) -> float:
-    """Return length of vector, i.e., its euclidean norm.
+    """Return length of vector, that is, its euclidean norm.
 
     Parameters:
         vector: Vector.
