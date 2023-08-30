@@ -61,11 +61,11 @@ from __future__ import annotations
 
 __all__ = ['main', 'response']
 
-import os
-import sys
-import io
 import base64
 import hashlib
+import io
+import os
+import sys
 from html import escape
 
 try:
@@ -343,8 +343,9 @@ def analyze(
         msg = str(exc).splitlines()
         text = msg[0][0].upper() + msg[0][1:]
         details = '\n'.join(msg[1:])
-        return '<h2>Error</h2><p>{}</p><pre>{}</pre>'.format(
-            escape(text, True), escape(details, True)
+        return (
+            f'<h2>Error</h2><p>{escape(text, True)}</p>'
+            f'<pre>{escape(details, True)}</pre>'
         )
     mime = {'svg': 'image/svg+xml', 'png': 'image/png'}[imageformat]
     return template.format(
@@ -417,8 +418,8 @@ def cgi(url: str, /, open_browser: bool = True, debug: bool = True) -> int:
         request.get = request.getfirst  # type: ignore
         print(response(request, url))
     else:
+        from http.server import CGIHTTPRequestHandler, HTTPServer
         from urllib.parse import urlparse
-        from http.server import HTTPServer, CGIHTTPRequestHandler
 
         def is_cgi(self):
             # monkey patch for CGIHTTPRequestHandler.is_cgi
