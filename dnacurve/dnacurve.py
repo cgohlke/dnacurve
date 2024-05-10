@@ -1,6 +1,6 @@
 # dnacurve.py
 
-# Copyright (c) 1993-2023, Christoph Gohlke
+# Copyright (c) 1993-2024, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@ curvature are calculated at each nucleotide.
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD 3-Clause
-:Version: 2023.8.30
+:Version: 2024.5.10
 :DOI: `10.5281/zenodo.7135499 <https://doi.org/10.5281/zenodo.7135499>`_
 
 Quickstart
@@ -68,13 +68,17 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.9.13, 3.10.11, 3.11.5, 3.12rc
-- `Numpy <https://pypi.org/project/numpy/>`_ 1.25.2
-- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.7.2
-- `Flask <https://pypi.org/project/Flask/>`_ 2.3.3 (optional)
+- `CPython <https://www.python.org>`_ 3.9.13, 3.10.11, 3.11.9, 3.12.3
+- `Numpy <https://pypi.org/project/numpy/>`_ 1.26.4
+- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.8.4
+- `Flask <https://pypi.org/project/Flask/>`_ 3.0.3 (optional)
 
 Revisions
 ---------
+
+2024.5.10
+
+- Fix mypy errors.
 
 2023.8.30
 
@@ -197,7 +201,7 @@ array([[0.58062, 0.58163, 0.58278, 0.58378],
 
 from __future__ import annotations
 
-__version__ = '2023.8.30'
+__version__ = '2024.5.10'
 
 __all__ = [
     'CurvedDNA',
@@ -637,10 +641,9 @@ class CurvedDNA:
             from matplotlib import pyplot
 
             fig = pyplot.figure(dpi=dpi, figsize=figsize)
-            try:
-                fig.canvas.manager.window.title('DNA Curvature Analysis')
-            except AttributeError:
-                pass
+            fcm = fig.canvas.manager
+            if fcm is not None:
+                fcm.set_window_title('DNA Curvature Analysis')
         else:
             from matplotlib.backends.backend_agg import FigureCanvasAgg
             from matplotlib.figure import Figure
@@ -710,7 +713,7 @@ class CurvedDNA:
                     size=10,
                 )
             ax.axis('image')
-            ax.axis([-limit, limit, -limit, limit])
+            ax.axis((-limit, limit, -limit, limit))
             ax.axis('off')
 
         plot_projection(322, 'XZ')
@@ -811,9 +814,9 @@ class Model:
         ...     name='Test',
         ...     rise=3.38,
         ...     oligo='AA AC AG AT CA GG CG GA GC TA'.split(),
-        ...     twist=(34.29, ) * 10,
-        ...     roll=(0., ) * 10,
-        ...     tilt=(0., ) * 10,
+        ...     twist=(34.29,) * 10,
+        ...     roll=(0.0,) * 10,
+        ...     tilt=(0.0,) * 10,
         ... )
         >>> m.write('_test.dat')
         >>> m.twist == Model('_test.dat').twist
@@ -1316,13 +1319,11 @@ def unique_oligos(length: int, /, nucleotides: str = 'AGCT') -> Iterator[str]:
 
 
 @overload
-def chunks(sequence: str, size: int = 10, /) -> list[str]:
-    ...
+def chunks(sequence: str, size: int = 10, /) -> list[str]: ...
 
 
 @overload
-def chunks(sequence: list[str], size: int = 10, /) -> list[list[str]]:
-    ...
+def chunks(sequence: list[str], size: int = 10, /) -> list[list[str]]: ...
 
 
 def chunks(
@@ -1337,7 +1338,7 @@ def chunks(
         size: Length of chunks.
 
     Examples:
-        >>> chunks('ATCG'*4, 10)
+        >>> chunks('ATCG' * 4, 10)
         ['ATCGATCGAT', 'CGATCG']
 
     """
@@ -1360,7 +1361,7 @@ def overlapping_chunks(
         Tuple of start position of chunk and chunk sequence.
 
     Examples:
-        >>> list(overlapping_chunks('ATCG'*4, 4, 2))
+        >>> list(overlapping_chunks('ATCG' * 4, 4, 2))
         [(0, 'ATCGATCG'), (4, 'ATCGATCG'), (8, 'ATCGATCG')]
 
     """
