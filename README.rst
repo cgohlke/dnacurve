@@ -8,7 +8,7 @@ curvature are calculated at each nucleotide.
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD 3-Clause
-:Version: 2023.8.30
+:Version: 2024.5.10
 :DOI: `10.5281/zenodo.7135499 <https://doi.org/10.5281/zenodo.7135499>`_
 
 Quickstart
@@ -38,13 +38,17 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.9.13, 3.10.11, 3.11.5, 3.12rc
-- `Numpy <https://pypi.org/project/numpy/>`_ 1.25.2
-- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.7.2
-- `Flask <https://pypi.org/project/Flask/>`_ 2.3.3 (optional)
+- `CPython <https://www.python.org>`_ 3.9.13, 3.10.11, 3.11.9, 3.12.3
+- `Numpy <https://pypi.org/project/numpy/>`_ 1.26.4
+- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.8.4
+- `Flask <https://pypi.org/project/Flask/>`_ 3.0.3 (optional)
 
 Revisions
 ---------
+
+2024.5.10
+
+- Fix mypy errors.
 
 2023.8.30
 
