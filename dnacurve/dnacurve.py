@@ -38,7 +38,7 @@ curvature are calculated at each nucleotide.
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD 3-Clause
-:Version: 2024.5.10
+:Version: 2024.5.24
 :DOI: `10.5281/zenodo.7135499 <https://doi.org/10.5281/zenodo.7135499>`_
 
 Quickstart
@@ -47,7 +47,7 @@ Quickstart
 Install the dnacurve package and all dependencies from the
 `Python Package Index <https://pypi.org/project/dnacurve/>`_::
 
-    python -m pip install -U dnacurve[all]
+    python -m pip install -U "dnacurve[all]"
 
 Print the console script usage::
 
@@ -75,6 +75,10 @@ This revision was tested with the following requirements and dependencies
 
 Revisions
 ---------
+
+2024.5.24
+
+- Fix docstring examples not correctly rendered on GitHub.
 
 2024.5.10
 
@@ -188,20 +192,20 @@ Examples
 --------
 
 >>> from dnacurve import CurvedDNA
->>> result = CurvedDNA('ATGCAAATTG' * 5, 'trifonov', name='Example')
->>> result.curvature[:, 18:22]
+>>> cdna = CurvedDNA('ATGCAAATTG' * 5, 'trifonov', name='Example')
+>>> cdna.curvature[:, 18:22]
 array([[0.58062, 0.58163, 0.58278, 0.58378],
        [0.0803 , 0.11293, 0.07676, 0.03166],
        [0.57924, 0.5758 , 0.57368, 0.5735 ]])
->>> result.write_csv('_test.csv')
->>> result.write_pdb('_test.pdb')
->>> result.plot('_test.png', dpi=120)
+>>> cdna.write_csv('_test.csv')
+>>> cdna.write_pdb('_test.pdb')
+>>> cdna.plot('_test.png', dpi=120)
 
 """
 
 from __future__ import annotations
 
-__version__ = '2024.5.10'
+__version__ = '2024.5.24'
 
 __all__ = [
     'CurvedDNA',
