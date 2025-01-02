@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # dnacurve/web.py
 
-# Copyright (c) 2005-2024, Christoph Gohlke
+# Copyright (c) 2005-2025, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -67,11 +67,15 @@ import io
 import os
 import sys
 from html import escape
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Any
 
 try:
     from . import dnacurve
 except ImportError:
-    import dnacurve  # type: ignore
+    import dnacurve  # type: ignore[no-redef]
 
 
 PAGE = """<!DOCTYPE html PUBLIC
@@ -221,7 +225,7 @@ download='{fname}.pdb'>Helix coordinates</a> (PDB format)</li>
 
 
 def response(
-    form,
+    form: Any,
     /,  # for compatibility
     url: str,
     *,
@@ -415,20 +419,20 @@ def cgi(url: str, /, open_browser: bool = True, debug: bool = True) -> int:
     if os.getenv('SERVER_NAME'):
         print('Content-type: text/html\n\n')
         request = cgi.FieldStorage()
-        request.get = request.getfirst  # type: ignore
+        request.get = request.getfirst
         print(response(request, url))
     else:
         from http.server import CGIHTTPRequestHandler, HTTPServer
         from urllib.parse import urlparse
 
-        def is_cgi(self):
+        def is_cgi(self: Any) -> bool:
             # monkey patch for CGIHTTPRequestHandler.is_cgi
             if filename in self.path:
                 self.cgi_info = '', self.path[1:]
                 return True
             return False
 
-        CGIHTTPRequestHandler.is_cgi = is_cgi  # type: ignore
+        CGIHTTPRequestHandler.is_cgi = is_cgi  # type: ignore[method-assign]
         print('Running CGI script at', url)
         if open_browser:
             webbrowser(url)
@@ -476,7 +480,7 @@ def main(
     app = Flask(__name__)
 
     @app.route('/', methods=['GET', 'POST'])
-    def root():
+    def root() -> str:
         return response(request.form, request.base_url)
 
     if open_browser:
