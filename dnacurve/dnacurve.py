@@ -1,6 +1,6 @@
 # dnacurve.py
 
-# Copyright (c) 1993-2024, Christoph Gohlke
+# Copyright (c) 1993-2025, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@ curvature are calculated at each nucleotide.
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD 3-Clause
-:Version: 2024.5.24
+:Version: 2025.1.1
 :DOI: `10.5281/zenodo.7135499 <https://doi.org/10.5281/zenodo.7135499>`_
 
 Quickstart
@@ -68,13 +68,18 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.9.13, 3.10.11, 3.11.9, 3.12.3
-- `Numpy <https://pypi.org/project/numpy/>`_ 1.26.4
-- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.8.4
-- `Flask <https://pypi.org/project/Flask/>`_ 3.0.3 (optional)
+- `CPython <https://www.python.org>`_ 3.10.11, 3.11.9, 3.12.8, 3.13.1 64-bit
+- `NumPy <https://pypi.org/project/numpy/>`_ 2.1.3
+- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.10.0
+- `Flask <https://pypi.org/project/Flask/>`_ 3.1.0 (optional)
 
 Revisions
 ---------
+
+2025.1.1
+
+- Improve type hints.
+- Drop support for Python 3.9, support Python 3.13.
 
 2024.5.24
 
@@ -102,7 +107,7 @@ Revisions
 - Run web application using Flask if installed.
 - Convert to Google style docstrings.
 - Add type hints.
-- Remove support for Python 3.7 and numpy < 1.19 (NEP29).
+- Drop support for Python 3.7 and numpy < 1.19 (NEP29).
 
 2021.6.29
 
@@ -110,7 +115,7 @@ Revisions
 
 2021.6.18
 
-- Remove support for Python 3.6 (NEP 29).
+- Drop support for Python 3.6 (NEP 29).
 - Fix dnacurve_web.py failure on WSL2.
 
 2021.3.6
@@ -119,7 +124,7 @@ Revisions
 
 2020.1.1
 
-- Remove support for Python 2.7 and 3.5.
+- Drop support for Python 2.7 and 3.5.
 - Update copyright.
 
 2018.8.15
@@ -205,9 +210,10 @@ array([[0.58062, 0.58163, 0.58278, 0.58378],
 
 from __future__ import annotations
 
-__version__ = '2024.5.24'
+__version__ = '2025.1.1'
 
 __all__ = [
+    '__version__',
     'CurvedDNA',
     'Model',
     'Sequence',
@@ -426,7 +432,7 @@ class CurvedDNA:
         # distance of endpoint to point on end to end line nearest to xyz[i]
         u = math.sqrt(w * w - x * x)
         # find transformation matrix
-        v0: NDArray[Any] = xyz[[0, i, -1]]  # type: ignore
+        v0: NDArray[Any] = xyz[[0, i, -1]]  # type: ignore[index]
         v1: NDArray[Any] = numpy.array(
             ((0, 0, 0), (e_len - u, 0, x), (e_len, 0, 0))
         )
@@ -532,21 +538,16 @@ class CurvedDNA:
         cur = self.curvature
         xyz = self.coordinates
         csv = [
-            'Sequence,Index,Curvature / {:.4f} [{}],'
-            'Bend Angle / {:.4f}  [{}],Curvature Angle / {:.4f}  [{}],'
+            'Sequence,Index,'
+            f'Curvature / {self.scales[0, 0]:.4f} [{self.windows[0]}],'
+            f'Bend Angle / {self.scales[1, 0]:.4f}  [{self.windows[1]}],'
+            f'Curvature Angle / {self.scales[2, 0]:.4f}  [{self.windows[2]}],'
             'Helix Axis [x],Helix Axis [y],Helix Axis [z],'
             'Phosphate 1 [x],Phosphate 1 [y],Phosphate 1 [z],'
             'Phosphate 2 [x],Phosphate 2 [y],Phosphate 2 [z],'
             'Basepair Normal [x],Basepair Normal [y],Basepair Normal [z],'
             'Smoothed Normal [x],Smoothed Normal [y],Smoothed Normal [z]'
-            '\n'.format(
-                self.scales[0, 0],
-                self.windows[0],
-                self.scales[1, 0],
-                self.windows[1],
-                self.scales[2, 0],
-                self.windows[2],
-            )
+            '\n'
         ]
         for i in range(len(self.sequence)):
             csv.append(f'{seq[i]},{i + 1}')
@@ -983,7 +984,7 @@ class Model:
             ):
                 try:
                     # import functions return dictionary or raise exception
-                    modeldict = importfunction(model)  # type: ignore
+                    modeldict = importfunction(model)  # type: ignore[arg-type]
                     break
                 except Exception:
                     pass
@@ -1047,7 +1048,7 @@ class Model:
 
     def _fromname(self, name: str, /) -> dict[str, Any]:
         """Return predefined model parameters as dict."""
-        return getattr(Model, name.upper())  # type: ignore
+        return getattr(Model, name.upper())  # type: ignore[no-any-return]
 
     def _fromclass(self, aclass: Model, /) -> dict[str, Any]:
         """Return model parameters as dict from class."""
@@ -1346,7 +1347,7 @@ def chunks(
         ['ATCGATCGAT', 'CGATCG']
 
     """
-    return [  # type: ignore
+    return [  # type: ignore[return-value]
         sequence[i : i + size] for i in range(0, len(sequence), size)
     ]
 
@@ -1474,7 +1475,7 @@ def superimpose_matrix(v0: NDArray[Any], v1: NDArray[Any], /) -> NDArray[Any]:
     M[0:3, 0:3] = R
     M[:3, 3] = t1
     T[0:3, 3] = -t0
-    return numpy.dot(M, T)
+    return numpy.dot(M, T)  # type: ignore[no-any-return]
 
 
 def norm(vector: NDArray[Any], /) -> float:
@@ -1592,7 +1593,7 @@ def main(argv: list[str] | None = None, /) -> int:
         try:
             from .web import main as web_main
         except ImportError:
-            from web import main as web_main  # type: ignore
+            from web import main as web_main  # type: ignore[no-redef]
 
         return web_main(settings.url, not settings.nobrowser)
     if settings.doctest:
@@ -1602,7 +1603,7 @@ def main(argv: list[str] | None = None, /) -> int:
         try:
             import dnacurve.dnacurve as m
         except ImportError:
-            m = None  # type: ignore
+            m = None  # type: ignore[assignment]
         doctest.testmod(m, optionflags=doctest.ELLIPSIS)
         return 0
     if settings.test:
@@ -1656,7 +1657,7 @@ def main(argv: list[str] | None = None, /) -> int:
 MODELS.extend(
     sorted(
         (a for a in dir(Model) if not a.startswith('_') and a.isupper()),
-        key=lambda x: getattr(Model, x)['name'],  # type: ignore
+        key=lambda x: getattr(Model, x)['name'],
     )
 )
 
