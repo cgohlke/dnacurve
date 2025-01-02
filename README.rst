@@ -11,7 +11,7 @@ curvature are calculated at each nucleotide.
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD 3-Clause
-:Version: 2024.5.24
+:Version: 2025.1.1
 :DOI: `10.5281/zenodo.7135499 <https://doi.org/10.5281/zenodo.7135499>`_
 
 Quickstart
@@ -41,13 +41,18 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.9.13, 3.10.11, 3.11.9, 3.12.3
-- `Numpy <https://pypi.org/project/numpy/>`_ 1.26.4
-- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.8.4
-- `Flask <https://pypi.org/project/Flask/>`_ 3.0.3 (optional)
+- `CPython <https://www.python.org>`_ 3.10.11, 3.11.9, 3.12.8, 3.13.1 64-bit
+- `NumPy <https://pypi.org/project/numpy/>`_ 2.1.3
+- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.10.0
+- `Flask <https://pypi.org/project/Flask/>`_ 3.1.0 (optional)
 
 Revisions
 ---------
+
+2025.1.1
+
+- Improve type hints.
+- Drop support for Python 3.9, support Python 3.13.
 
 2024.5.24
 
@@ -75,7 +80,7 @@ Revisions
 - Run web application using Flask if installed.
 - Convert to Google style docstrings.
 - Add type hints.
-- Remove support for Python 3.7 and numpy < 1.19 (NEP29).
+- Drop support for Python 3.7 and numpy < 1.19 (NEP29).
 
 2021.6.29
 
@@ -83,7 +88,7 @@ Revisions
 
 2021.6.18
 
-- Remove support for Python 3.6 (NEP 29).
+- Drop support for Python 3.6 (NEP 29).
 - Fix dnacurve_web.py failure on WSL2.
 
 2021.3.6
@@ -92,7 +97,7 @@ Revisions
 
 2020.1.1
 
-- Remove support for Python 2.7 and 3.5.
+- Drop support for Python 2.7 and 3.5.
 - Update copyright.
 
 2018.8.15
