@@ -37,8 +37,8 @@ according to the dinucleotide wedge model. Local bending angles and macroscopic
 curvature are calculated at each nucleotide.
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
-:License: BSD 3-Clause
-:Version: 2025.1.1
+:License: BSD-3-Clause
+:Version: 2025.5.8
 :DOI: `10.5281/zenodo.7135499 <https://doi.org/10.5281/zenodo.7135499>`_
 
 Quickstart
@@ -68,13 +68,18 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.10.11, 3.11.9, 3.12.8, 3.13.1 64-bit
-- `NumPy <https://pypi.org/project/numpy/>`_ 2.1.3
-- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.10.0
+- `CPython <https://www.python.org>`_ 3.10.11, 3.11.9, 3.12.10, 3.13.3 64-bit
+- `NumPy <https://pypi.org/project/numpy/>`_ 2.2.5
+- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.10.1
 - `Flask <https://pypi.org/project/Flask/>`_ 3.1.0 (optional)
 
 Revisions
 ---------
+
+2025.5.8
+
+- Remove deprecated save functions (breaking).
+- Remove doctest command line option.
 
 2025.1.1
 
@@ -199,9 +204,9 @@ Examples
 >>> from dnacurve import CurvedDNA
 >>> cdna = CurvedDNA('ATGCAAATTG' * 5, 'trifonov', name='Example')
 >>> cdna.curvature[:, 18:22]
-array([[0.58062, 0.58163, 0.58278, 0.58378],
-       [0.0803 , 0.11293, 0.07676, 0.03166],
-       [0.57924, 0.5758 , 0.57368, 0.5735 ]])
+array([[0.58061616, 0.58163338, 0.58277938, 0.583783  ],
+       [0.08029914, 0.11292516, 0.07675816, 0.03166286],
+       [0.57923902, 0.57580064, 0.57367815, 0.57349872]])
 >>> cdna.write_csv('_test.csv')
 >>> cdna.write_pdb('_test.pdb')
 >>> cdna.plot('_test.png', dpi=120)
@@ -210,7 +215,7 @@ array([[0.58062, 0.58163, 0.58278, 0.58378],
 
 from __future__ import annotations
 
-__version__ = '2025.1.1'
+__version__ = '2025.5.8'
 
 __all__ = [
     '__version__',
@@ -514,10 +519,6 @@ class CurvedDNA:
         with open(path, 'w', encoding='latin-1', newline='\r\n') as fh:
             fh.write(self.csv())
 
-    def save_csv(self, path: os.PathLike[Any] | str) -> None:
-        # deprecated
-        self.write_csv(path)
-
     def write_pdb(self, path: os.PathLike[Any] | str, /) -> None:
         """Write atomic coordinates to PDB file.
 
@@ -527,10 +528,6 @@ class CurvedDNA:
         """
         with open(path, 'w', encoding='latin-1', newline='\n') as fh:
             fh.write(self.pdb())
-
-    def save_pdb(self, path: os.PathLike[Any] | str) -> None:
-        # deprecated
-        self.write_pdb(path)
 
     def csv(self) -> str:
         """Return coordinates and curvature values in CSV format."""
@@ -1065,10 +1062,6 @@ class Model:
         with open(path, 'w', encoding='latin-1', newline='\n') as fh:
             fh.write(str(self))
 
-    def save(self, path: os.PathLike[Any] | str, /) -> None:
-        # deprecated
-        self.write(path)
-
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} {self.name!r}>'
 
@@ -1209,10 +1202,6 @@ class Sequence:
         with open(path, 'w', encoding='latin-1', newline='\n') as fh:
             fh.write(f'{self.name}\n{self.comment}\n{self.format()}')
 
-    def save(self, path: os.PathLike[Any] | str, /) -> None:
-        # deprecated
-        self.write(path)
-
     @property
     def string(self) -> str:
         """Sequence string containing only ATCG."""
@@ -1283,7 +1272,7 @@ def oligonucleotides(
         nucleotides: Nucleotides in oligonucleotides.
 
     Yields:
-        Oligonucletotide sequence of length.
+        Oligonucleotide sequence of length.
 
     Examples:
         >>> ' '.join(oligonucleotides(2))
@@ -1324,11 +1313,11 @@ def unique_oligos(length: int, /, nucleotides: str = 'AGCT') -> Iterator[str]:
 
 
 @overload
-def chunks(sequence: str, size: int = 10, /) -> list[str]: ...
+def chunks(sequence: str, /, size: int = 10) -> list[str]: ...
 
 
 @overload
-def chunks(sequence: list[str], size: int = 10, /) -> list[list[str]]: ...
+def chunks(sequence: list[str], /, size: int = 10) -> list[list[str]]: ...
 
 
 def chunks(
@@ -1359,17 +1348,24 @@ def overlapping_chunks(
 
     Parameters:
         sequence: Sequence to be chunked.
-        size: Length of chunks.
+        size: Length of chunks without overlap.
         overlap: Size of overlap.
 
     Yields:
         Tuple of start position of chunk and chunk sequence.
+
+    Raises:
+        ValueError:
+            If sequence is too short for chunk size and overlap
+            (``len(sequence) < size + 2 * overlap``).
 
     Examples:
         >>> list(overlapping_chunks('ATCG' * 4, 4, 2))
         [(0, 'ATCGATCG'), (4, 'ATCGATCG'), (8, 'ATCGATCG')]
 
     """
+    if len(sequence) < size + 2 * overlap:
+        raise ValueError('sequence too short for chunk size and overlap')
     index = 0
     while index < len(sequence) - 2 * overlap:
         yield index, sequence[index : index + size + 2 * overlap]
@@ -1577,13 +1573,6 @@ def main(argv: list[str] | None = None, /) -> int:
         default=False,
         help='analyze a test sequence',
     )
-    opt(
-        '--doctest',
-        dest='doctest',
-        action='store_true',
-        default=False,
-        help='run the internal tests',
-    )
     opt('-v', '--verbose', dest='verbose', action='store_true', default=True)
     opt('-q', '--quiet', dest='verbose', action='store_false')
 
@@ -1596,16 +1585,6 @@ def main(argv: list[str] | None = None, /) -> int:
             from web import main as web_main  # type: ignore[no-redef]
 
         return web_main(settings.url, not settings.nobrowser)
-    if settings.doctest:
-        import doctest
-
-        numpy.set_printoptions(suppress=True, precision=5)
-        try:
-            import dnacurve.dnacurve as m
-        except ImportError:
-            m = None  # type: ignore[assignment]
-        doctest.testmod(m, optionflags=doctest.ELLIPSIS)
-        return 0
     if settings.test:
         settings.name = 'Kinetoplast'
         sequence = Sequence.KINETOPLAST
