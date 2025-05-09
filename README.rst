@@ -10,8 +10,8 @@ according to the dinucleotide wedge model. Local bending angles and macroscopic
 curvature are calculated at each nucleotide.
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
-:License: BSD 3-Clause
-:Version: 2025.1.1
+:License: BSD-3-Clause
+:Version: 2025.5.8
 :DOI: `10.5281/zenodo.7135499 <https://doi.org/10.5281/zenodo.7135499>`_
 
 Quickstart
@@ -41,13 +41,18 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.10.11, 3.11.9, 3.12.8, 3.13.1 64-bit
-- `NumPy <https://pypi.org/project/numpy/>`_ 2.1.3
-- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.10.0
+- `CPython <https://www.python.org>`_ 3.10.11, 3.11.9, 3.12.10, 3.13.3 64-bit
+- `NumPy <https://pypi.org/project/numpy/>`_ 2.2.5
+- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.10.1
 - `Flask <https://pypi.org/project/Flask/>`_ 3.1.0 (optional)
 
 Revisions
 ---------
+
+2025.5.8
+
+- Remove deprecated save functions (breaking).
+- Remove doctest command line option.
 
 2025.1.1
 
@@ -174,9 +179,9 @@ Examples
     >>> from dnacurve import CurvedDNA
     >>> cdna = CurvedDNA('ATGCAAATTG' * 5, 'trifonov', name='Example')
     >>> cdna.curvature[:, 18:22]
-    array([[0.58062, 0.58163, 0.58278, 0.58378],
-           [0.0803 , 0.11293, 0.07676, 0.03166],
-           [0.57924, 0.5758 , 0.57368, 0.5735 ]])
+    array([[0.58061616, 0.58163338, 0.58277938, 0.583783  ],
+           [0.08029914, 0.11292516, 0.07675816, 0.03166286],
+           [0.57923902, 0.57580064, 0.57367815, 0.57349872]])
     >>> cdna.write_csv('_test.csv')
     >>> cdna.write_pdb('_test.pdb')
     >>> cdna.plot('_test.png', dpi=120)
