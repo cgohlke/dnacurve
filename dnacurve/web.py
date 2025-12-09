@@ -230,7 +230,7 @@ def response(
     url: str,
     *,
     template: str | None = None,
-    help: str | None = None,
+    help: str | None = None,  # noqa: A002
     maxlen: int = dnacurve.MAXLEN,
     heads: str = '',
 ) -> str:
@@ -254,7 +254,7 @@ def response(
     if template is None:
         template = PAGE
     if help is None:
-        help = HELP
+        help = HELP  # noqa: A001
 
     seq = form.get('seq', '').strip()
     mod = form.get('mod', '')
@@ -348,8 +348,8 @@ def analyze(
         text = msg[0][0].upper() + msg[0][1:]
         details = '\n'.join(msg[1:])
         return (
-            f'<h2>Error</h2><p>{escape(text, True)}</p>'
-            f'<pre>{escape(details, True)}</pre>'
+            f'<h2>Error</h2><p>{escape(text, quote=True)}</p>'
+            f'<pre>{escape(details, quote=True)}</pre>'
         )
     mime = {'svg': 'image/svg+xml', 'png': 'image/png'}[imageformat]
     return template.format(
@@ -389,7 +389,7 @@ def webbrowser(url: str, /, delay: float = 1.0) -> None:
     threading.Timer(delay, lambda: webbrowser.open(url)).start()
 
 
-def cgi(url: str, /, open_browser: bool = True, debug: bool = True) -> int:
+def cgi(url: str, /, *, open_browser: bool = True, debug: bool = True) -> int:
     """Run web application in local CGI server.
 
     Parameters:
@@ -417,10 +417,10 @@ def cgi(url: str, /, open_browser: bool = True, debug: bool = True) -> int:
         os.chdir(dirname)
 
     if os.getenv('SERVER_NAME'):
-        print('Content-type: text/html\n\n')
+        print('Content-type: text/html\n\n')  # noqa: T201
         request = cgi.FieldStorage()
         request.get = request.getfirst
-        print(response(request, url))
+        print(response(request, url))  # noqa: T201
     else:
         from http.server import CGIHTTPRequestHandler, HTTPServer
         from urllib.parse import urlparse
@@ -433,7 +433,7 @@ def cgi(url: str, /, open_browser: bool = True, debug: bool = True) -> int:
             return False
 
         CGIHTTPRequestHandler.is_cgi = is_cgi  # type: ignore[method-assign]
-        print('Running CGI script at', url)
+        print('Running CGI script at', url)  # noqa: T201
         if open_browser:
             webbrowser(url)
         urlp = urlparse(url)
@@ -447,6 +447,8 @@ def cgi(url: str, /, open_browser: bool = True, debug: bool = True) -> int:
 
 def main(
     url: str | None = None,
+    /,
+    *,
     open_browser: bool = True,
     debug: bool = False,
 ) -> int:
@@ -469,7 +471,7 @@ def main(
     try:
         from flask import Flask, request
     except ImportError:
-        return cgi(url, open_browser)
+        return cgi(url, open_browser=open_browser, debug=debug)
 
     from urllib.parse import urlparse
 
