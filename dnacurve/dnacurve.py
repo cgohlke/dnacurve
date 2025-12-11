@@ -38,7 +38,7 @@ curvature are calculated at each nucleotide.
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD-3-Clause
-:Version: 2025.5.8
+:Version: 2025.12.12
 :DOI: `10.5281/zenodo.7135499 <https://doi.org/10.5281/zenodo.7135499>`_
 
 Quickstart
@@ -68,13 +68,18 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.10.11, 3.11.9, 3.12.10, 3.13.3 64-bit
-- `NumPy <https://pypi.org/project/numpy/>`_ 2.2.5
-- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.10.1
-- `Flask <https://pypi.org/project/Flask/>`_ 3.1.0 (optional)
+- `CPython <https://www.python.org>`_ 3.11.9, 3.12.10, 3.13.11 3.14.2 64-bit
+- `NumPy <https://pypi.org/project/numpy>`_ 2.3.5
+- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.10.7
+- `Flask <https://pypi.org/project/Flask/>`_ 3.1.2 (optional)
 
 Revisions
 ---------
+
+2025.12.12
+
+- Remove unused overlapping_chunks function.
+- Drop support for Python 3.10, support Python 3.14.
 
 2025.5.8
 
@@ -215,22 +220,21 @@ array([[0.58061616, 0.58163338, 0.58277938, 0.583783  ],
 
 from __future__ import annotations
 
-__version__ = '2025.5.8'
+__version__ = '2025.12.12'
 
 __all__ = [
-    '__version__',
+    'MAXLEN',
+    'MODELS',
     'CurvedDNA',
     'Model',
     'Sequence',
-    'MAXLEN',
-    'MODELS',
+    '__version__',
     'chunks',
     'complementary',
     'dinuc_window',
     'dinucleotide_matrix',
     'main',
     'oligonucleotides',
-    'overlapping_chunks',
     'superimpose_matrix',
     'unique_oligos',
 ]
@@ -241,7 +245,7 @@ import os
 import re
 import sys
 import warnings
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, ClassVar, overload
 
 import numpy
 
@@ -373,15 +377,20 @@ class CurvedDNA:
                 f'sequence must be >{self.model.order} nucleotides long'
             )
         if size > maxlen:
-            warnings.warn(f'sequence is longer than {maxlen} nucleotides')
+            warnings.warn(
+                f'sequence is longer than {maxlen} nucleotides', stacklevel=2
+            )
 
-        assert 0 < curvature_window < 21
-        assert 0 < bend_window < 4
-        assert 9 < curve_window < 21
+        if not 0 < curvature_window < 21:
+            raise ValueError(f'{curvature_window=} out of range [1, 20]')
+        if not 0 < bend_window < 4:
+            raise ValueError(f'{bend_window=} out of range [1, 3]')
+        if not 9 < curve_window < 21:
+            raise ValueError(f'{curve_window=} out of range [10, 20]')
         self.windows = (curvature_window, bend_window, curve_window)
         self._limits = (10.0, 10.0, 10.0)
 
-        self.date = datetime.datetime.now()
+        self.date = datetime.datetime.now(tz=datetime.UTC)
         self.coordinates = numpy.zeros((5, size, 4), dtype=numpy.float64)
         self.curvature = numpy.zeros((3, size), dtype=numpy.float64)
         self.scales = numpy.ones((3, 1), dtype=numpy.float64)
@@ -441,8 +450,8 @@ class CurvedDNA:
         v1: NDArray[Any] = numpy.array(
             ((0, 0, 0), (e_len - u, 0, x), (e_len, 0, 0))
         )
-        M = superimpose_matrix(v0, v1)
-        self.coordinates: NDArray[Any] = numpy.dot(self.coordinates, M.T)
+        m = superimpose_matrix(v0, v1)
+        self.coordinates: NDArray[Any] = numpy.dot(self.coordinates, m.T)
 
     def _center(self) -> None:
         """Center atomic coordinates at origin."""
@@ -549,8 +558,10 @@ class CurvedDNA:
         for i in range(len(self.sequence)):
             csv.append(f'{seq[i]},{i + 1}')
             csv.append(',{:.5f},{:.5f},{:.5f}'.format(*cur[:, i]))
-            for j in range(5):
-                csv.append(',{:.5f},{:.5f},{:.5f}'.format(*xyz[j, i, 0:3]))
+            csv.extend(
+                ',{:.5f},{:.5f},{:.5f}'.format(*xyz[j, i, 0:3])
+                for j in range(5)
+            )
             csv.append('\n')
         return ''.join(csv)
 
@@ -679,7 +690,7 @@ class CurvedDNA:
         limit = max(self._limits) * 1.1
 
         def plot_projection(
-            plotnum: int, axes: str, label: bool = True, /
+            plotnum: int, axes: str, /, *, label: bool = True
         ) -> None:
             ax = fig.add_subplot(plotnum)
             ax.set_title(f'{axes[0]}-{axes[1]}', size=11)
@@ -719,7 +730,7 @@ class CurvedDNA:
             ax.axis('off')
 
         plot_projection(322, 'XZ')
-        plot_projection(323, 'ZY', False)
+        plot_projection(323, 'ZY', label=False)
         plot_projection(324, 'XY')
 
         # plot
@@ -827,8 +838,7 @@ class Model:
     """
 
     # fmt: off
-    # noqa: E201,E222,E241,E251
-    STRAIGHT: dict[str, Any] = dict(
+    STRAIGHT: ClassVar[dict[str, Any]] = dict(
         name = 'Straight',
         oligo = 'AA AC AG AT CA GG CG GA GC TA',
         twist = (360.0 / 10.5, ) * 10,
@@ -837,7 +847,7 @@ class Model:
         rise = 3.38,
     )
 
-    AAWEDGE: dict[str, Any] = dict(
+    AAWEDGE: ClassVar[dict[str, Any]] = dict(
         name = 'AA Wedge',
         oligo = 'AA     AC    AG    AT    CA    GG     CG    GA    GC    TA',
         twist = (35.62, 34.4, 27.7, 31.5, 34.5, 33.67, 29.8, 36.9, 40.0, 36.0),
@@ -846,7 +856,7 @@ class Model:
         rise = 3.38,
     )
 
-    CALLADINE: dict[str, Any] = dict(
+    CALLADINE: ClassVar[dict[str, Any]] = dict(
         # Nucleic Acids Res, 1994, 22(24), p 5498, Table 1, Model b.
         name = 'Calladine & Drew',
         oligo = 'AA    AC    AG    AT    CA    GG    CG    GA    GC    TA',
@@ -856,7 +866,7 @@ class Model:
         rise = 3.38,
     )
 
-    TRIFONOV: dict[str, Any] = dict(
+    TRIFONOV: ClassVar[dict[str, Any]] = dict(
         # Nucleic Acids Res, 1994, 22(24), p 5498, Table 1, Model c.
         name = 'Bolshoi & Trifonov',
         oligo = 'AA     AC    AG    AT    CA    GG     CG    GA    GC    TA',
@@ -866,7 +876,7 @@ class Model:
         rise = 3.38,
     )
 
-    DESANTIS: dict[str, Any] = dict(
+    DESANTIS: ClassVar[dict[str, Any]] = dict(
         # Nucleic Acids Res, 1994, 22(24), p 5498, Table 1, Model d.
         name = 'Cacchione & De Santis',
         oligo = 'AA    AC    AG    AT    CA    GG    CG    GA    GC    TA',
@@ -876,7 +886,7 @@ class Model:
         rise = 3.38,
     )
 
-    REVERSED: dict[str, Any] = dict(
+    REVERSED: ClassVar[dict[str, Any]] = dict(
         # Nucleic Acids Res, 1994, 22(24), p 5498, Table 1, Model e.
         name = 'Reversed Calladine & Drew',
         oligo = 'AA    AC    AG    AT    CA    GG    CG    GA    GC    TA',
@@ -886,7 +896,7 @@ class Model:
         rise = 3.38,
     )
 
-    NUCLEOSOME: dict[str, Any] = dict(
+    NUCLEOSOME: ClassVar[dict[str, Any]] = dict(
         # Nucleic Acids Res, 1994, 22(24), p 5498, Table 1, Model a.
         name = 'Nucleosome Positioning',
         oligo = """
@@ -911,7 +921,7 @@ class Model:
         rise = 3.38,
     )
 
-    TRINUCLEOTIDE: dict[str, Any] = dict(
+    TRINUCLEOTIDE: ClassVar[dict[str, Any]] = dict(
         # Trends Biochem Sci, 1998, 23(9), p 341, Table 1, consensus scale.
         name = 'DNAse I Consensus',
         oligo = """
@@ -983,7 +993,7 @@ class Model:
                     # import functions return dictionary or raise exception
                     modeldict = importfunction(model)  # type: ignore[arg-type]
                     break
-                except Exception:
+                except Exception:  # noqa: S110
                     pass
             else:
                 raise ValueError(f'cannot initialize model from {model}')
@@ -999,9 +1009,9 @@ class Model:
         self.order = len(self.oligos[0])
         self.name = str(modeldict['name'][:32])
         self.rise = float(modeldict['rise'])
-        self.twist = dict(zip(self.oligos, modeldict['twist']))
-        self.roll = dict(zip(self.oligos, modeldict['roll']))
-        self.tilt = dict(zip(self.oligos, modeldict['tilt']))
+        self.twist = dict(zip(self.oligos, modeldict['twist'], strict=True))
+        self.roll = dict(zip(self.oligos, modeldict['roll'], strict=True))
+        self.tilt = dict(zip(self.oligos, modeldict['tilt'], strict=True))
 
         self.matrices = {}
         for oligo in oligonucleotides(self.order):
@@ -1054,7 +1064,7 @@ class Model:
     def _fromdict(self, adict: dict[str, Any], /) -> dict[str, Any]:
         """Return model parameters as dict from dictionary."""
         for attr in Model.STRAIGHT:
-            adict[attr]  # noqa: validation
+            adict[attr]
         return adict
 
     def write(self, path: os.PathLike[Any] | str, /) -> None:
@@ -1170,11 +1180,13 @@ class Sequence:
         self.comment = (comment + ' ').splitlines()[0].strip()
 
         # remove all but ATCG from sequence
-        nucls = dict(zip('ATCGatcg', 'ATCGATCG'))
+        nucls = dict(zip('ATCGatcg', 'ATCGATCG', strict=True))
         self._sequence = ''.join(nucls.get(c, '') for c in self._sequence)
         # limit length of sequence
         if maxlen and len(self._sequence) > maxlen:
-            warnings.warn(f'sequence truncated to {maxlen} nucleotides')
+            warnings.warn(
+                f'sequence truncated to {maxlen} nucleotides', stacklevel=2
+            )
             self._sequence = self._sequence[:maxlen]
         if not self._sequence:
             raise ValueError('not a valid sequence')
@@ -1232,10 +1244,13 @@ class Sequence:
     def __iter__(self) -> Iterator[str]:
         return iter(self._sequence)
 
+    def __hash__(self) -> int:
+        return hash(self._sequence)
+
     def __eq__(self, other: object, /) -> bool:
-        if not isinstance(other, (str, Sequence)):
-            return False
-        return self._sequence == other[:]
+        return (
+            isinstance(other, (str, Sequence)) and self._sequence == other[:]
+        )
 
     def __repr__(self) -> str:
         return (
@@ -1341,37 +1356,6 @@ def chunks(
     ]
 
 
-def overlapping_chunks(
-    sequence: Sequence | str, size: int, overlap: int, /
-) -> Iterator[tuple[int, str]]:
-    """Return iterator over overlapping chunks of sequence.
-
-    Parameters:
-        sequence: Sequence to be chunked.
-        size: Length of chunks without overlap.
-        overlap: Size of overlap.
-
-    Yields:
-        Tuple of start position of chunk and chunk sequence.
-
-    Raises:
-        ValueError:
-            If sequence is too short for chunk size and overlap
-            (``len(sequence) < size + 2 * overlap``).
-
-    Examples:
-        >>> list(overlapping_chunks('ATCG' * 4, 4, 2))
-        [(0, 'ATCGATCG'), (4, 'ATCGATCG'), (8, 'ATCGATCG')]
-
-    """
-    if len(sequence) < size + 2 * overlap:
-        raise ValueError('sequence too short for chunk size and overlap')
-    index = 0
-    while index < len(sequence) - 2 * overlap:
-        yield index, sequence[index : index + size + 2 * overlap]
-        index += size
-
-
 def dinuc_window(
     sequence: Sequence | str, size: int, /
 ) -> Iterator[str | None]:
@@ -1393,13 +1377,14 @@ def dinuc_window(
         [None, 'ATCG', None]
 
     """
-    assert 1 < size <= len(sequence)
+    if not 1 < size <= len(sequence):
+        raise ValueError(f'{size=} out of range [1, {len(sequence)=}]')
     border = size // 2
-    for i in range(0, border - 1):
+    for _i in range(border - 1):
         yield None
-    for i in range(0, len(sequence) - size + 1):
+    for i in range(len(sequence) - size + 1):
         yield sequence[i : i + size]
-    for i in range(len(sequence) - size + border, len(sequence) - 1):
+    for _i in range(len(sequence) - size + border, len(sequence) - 1):
         yield None
 
 
@@ -1456,22 +1441,22 @@ def superimpose_matrix(v0: NDArray[Any], v1: NDArray[Any], /) -> NDArray[Any]:
     # move centroids to origin
     t0 = numpy.mean(v0, axis=0)
     t1 = numpy.mean(v1, axis=0)
-    v0 -= t0
-    v1 -= t1
+    v0 = v0 - t0
+    v1 = v1 - t1
     # SVD of covariance matrix
     u, _, vh = numpy.linalg.svd(numpy.dot(v1.T, v0))
     # rotation matrix from SVD orthonormal bases
-    R = numpy.dot(u, vh)
-    if numpy.linalg.det(R) < 0.0:
+    r = numpy.dot(u, vh)
+    if numpy.linalg.det(r) < 0.0:
         # correct reflections
-        R -= numpy.outer(u[:, 2], vh[2, :] * 2.0)
+        r -= numpy.outer(u[:, 2], vh[2, :] * 2.0)
     # homogeneous transformation matrix
-    M = numpy.identity(4, dtype=numpy.float64)
-    T = numpy.identity(4, dtype=numpy.float64)
-    M[0:3, 0:3] = R
-    M[:3, 3] = t1
-    T[0:3, 3] = -t0
-    return numpy.dot(M, T)  # type: ignore[no-any-return]
+    m = numpy.identity(4, dtype=numpy.float64)
+    t = numpy.identity(4, dtype=numpy.float64)
+    m[0:3, 0:3] = r
+    m[:3, 3] = t1
+    t[0:3, 3] = -t0
+    return numpy.dot(m, t)  # type: ignore[no-any-return]
 
 
 def norm(vector: NDArray[Any], /) -> float:
@@ -1544,7 +1529,7 @@ def main(argv: list[str] | None = None, /) -> int:
         help='plot to interactive window',
     )
     opt(
-        "--dpi", dest='dpi', type='int', default=96, help='set plot resolution'
+        '--dpi', dest='dpi', type='int', default=96, help='set plot resolution'
     )
     opt(
         '--web',
@@ -1584,7 +1569,7 @@ def main(argv: list[str] | None = None, /) -> int:
         except ImportError:
             from web import main as web_main  # type: ignore[no-redef]
 
-        return web_main(settings.url, not settings.nobrowser)
+        return web_main(settings.url, open_browser=not settings.nobrowser)
     if settings.test:
         settings.name = 'Kinetoplast'
         sequence = Sequence.KINETOPLAST
@@ -1607,11 +1592,11 @@ def main(argv: list[str] | None = None, /) -> int:
     try:
         results = CurvedDNA(sequence, settings.model, name=settings.name)
     except Exception as exc:
-        print('\nFatal Error: \n  ', exc, sep='')
+        print('\nFatal Error: \n  ', exc, sep='')  # noqa: T201
         # raise
     else:
         if settings.verbose:
-            print('\n', results, sep='')
+            print('\n', results, sep='')  # noqa: T201
         if settings.csv:
             results.write_csv(settings.csv)
         if settings.pdb:
@@ -1622,7 +1607,9 @@ def main(argv: list[str] | None = None, /) -> int:
             try:
                 results.plot(settings.plot, dpi=settings.dpi)
             except Exception as exc:
-                print('\nFailed to plot results: \n  ', exc, sep='')
+                print(  # noqa: T201
+                    '\nFailed to plot results: \n  ', exc, sep=''
+                )
         else:
             if settings.ps:
                 results.plot(settings.ps, dpi=settings.dpi)
