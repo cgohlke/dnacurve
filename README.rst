@@ -11,7 +11,7 @@ curvature are calculated at each nucleotide.
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD-3-Clause
-:Version: 2025.12.12
+:Version: 2026.1.8
 :DOI: `10.5281/zenodo.7135499 <https://doi.org/10.5281/zenodo.7135499>`_
 
 Quickstart
@@ -41,13 +41,17 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.11.9, 3.12.10, 3.13.11 3.14.2 64-bit
-- `NumPy <https://pypi.org/project/numpy>`_ 2.3.5
-- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.10.7
+- `CPython <https://www.python.org>`_ 3.11.9, 3.12.10, 3.13.11, 3.14.2 64-bit
+- `NumPy <https://pypi.org/project/numpy>`_ 2.4.0
+- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.10.8
 - `Flask <https://pypi.org/project/Flask/>`_ 3.1.2 (optional)
 
 Revisions
 ---------
+
+2026.1.8
+
+- Improve code quality.
 
 2025.12.12
 
@@ -66,85 +70,9 @@ Revisions
 
 2024.5.24
 
-- Fix docstring examples not correctly rendered on GitHub.
+- …
 
-2024.5.10
-
-- Fix mypy errors.
-
-2023.8.30
-
-- Fix linting issues.
-- Add py.typed marker.
-
-2023.4.30
-
-- Improve type hints.
-- Drop support for Python 3.8 and numpy < 1.21 (NEP29).
-
-2022.10.4
-
-- Rename dnacurve_web.py to web.py (breaking).
-- Deprecate save functions (use write functions).
-- Add options to specify URL of web application and not opening web browser.
-- Run web application using Flask if installed.
-- Convert to Google style docstrings.
-- Add type hints.
-- Drop support for Python 3.7 and numpy < 1.19 (NEP29).
-
-2021.6.29
-
-- Improve export to PDB.
-
-2021.6.18
-
-- Drop support for Python 3.6 (NEP 29).
-- Fix dnacurve_web.py failure on WSL2.
-
-2021.3.6
-
-- Update copyright and formatting.
-
-2020.1.1
-
-- Drop support for Python 2.7 and 3.5.
-- Update copyright.
-
-2018.8.15
-
-- Move modules into dnacurve package.
-
-2018.5.29
-
-- Add option to start web interface from console.
-- Use matplotlib OOP interface.
-
-2018.5.25
-
-- Add functions to return PDB and CSV results as string.
-
-2018.2.6
-
-- Style and doctest fixes.
-
-2014.6.16
-
-- DNAse I Consensus model.
-
-2013.11.21
-
-- Overlapping chunks iterator.
-
-2013.11.17
-
-- Limit maximum sequence length to 510 nucleotides.
-- Read simple FASTA sequence files.
-- Save positive coordinates to PDB files.
-- Fix sequence display for matplotlib 1.3.
-
-2005.x.x
-
-- Initial release.
+Refer to the CHANGES file for older revisions.
 
 Notes
 -----
