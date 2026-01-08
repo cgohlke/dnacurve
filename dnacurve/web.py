@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # dnacurve/web.py
 
-# Copyright (c) 2005-2025, Christoph Gohlke
+# Copyright (c) 2005-2026, Christoph Gohlke
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -329,9 +329,11 @@ def analyze(
     try:
         seq = dnacurve.Sequence(sequence)
         if len(seq) > maxlen:
-            raise ValueError('sequence is too long')
+            msg = 'sequence is too long'
+            raise ValueError(msg)
         if len(seq) < 10:
-            raise ValueError('sequence is too short')
+            msg = 'sequence is too short'
+            raise ValueError(msg)
         name = hashlib.md5(seq.string.encode('ascii')).hexdigest()
         seq.name = name[:13]
         fname = name + str(dnacurve.MODELS.index(model))
@@ -344,9 +346,9 @@ def analyze(
         pdb = b64encode(results.pdb())
     except Exception as exc:
         # raise
-        msg = str(exc).splitlines()
-        text = msg[0][0].upper() + msg[0][1:]
-        details = '\n'.join(msg[1:])
+        msgs = str(exc).splitlines()
+        text = msgs[0][0].upper() + msgs[0][1:]
+        details = '\n'.join(msgs[1:])
         return (
             f'<h2>Error</h2><p>{escape(text, quote=True)}</p>'
             f'<pre>{escape(details, quote=True)}</pre>'
@@ -438,7 +440,8 @@ def cgi(url: str, /, *, open_browser: bool = True, debug: bool = True) -> int:
             webbrowser(url)
         urlp = urlparse(url)
         if urlp.hostname is None or urlp.port is None:
-            raise ValueError(f'invalid URL {url!r}')
+            msg = f'invalid URL {url!r}'
+            raise ValueError(msg)
         HTTPServer(
             (urlp.hostname, urlp.port), CGIHTTPRequestHandler
         ).serve_forever()
@@ -477,7 +480,8 @@ def main(
 
     urlp = urlparse(url)
     if urlp.hostname is None or urlp.port is None:
-        raise ValueError(f'invalid URL {url!r}')
+        msg = f'invalid URL {url!r}'
+        raise ValueError(msg)
 
     app = Flask(__name__)
 
