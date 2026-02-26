@@ -39,10 +39,10 @@ Run the web application in a local web server::
 The application is run in a Flask built-in server, and a web browser is opened.
 
 If Flask is not installed, the application is run in a built-in CGI server.
-The cgi module is deprecated and slated for removal in Python 3.13.
+The cgi module was removed in Python 3.13.
 To run in CGI mode, this script must be made executable on UNIX systems::
 
-    chmod -x ./web.py
+    chmod +x ./web.py
 
 Do not run the built-in Flask or CGI servers in a production deployment.
 Instead, for example, create a Flask app and serve it on a production server::
@@ -78,50 +78,46 @@ except ImportError:
     import dnacurve  # type: ignore[no-redef]
 
 
-PAGE = """<!DOCTYPE html PUBLIC
-"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN"
-"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-xmlns:mathml="http://www.w3.org/1998/Math/MathML"
-xmlns:svg="http://www.w3.org/2000/svg" xml:lang="en">
+PAGE = """<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<style type="text/css">
-html {{font-size:16px}}
-body {{min-width:576px, margin:0.5em; padding: 0.25em 0.5em 0 0.5em;}}
-div.header {{display:flex;flex-wrap:wrap;align-items:baseline;
-padding-bottom:0.4em}}
-div.header p a {{text-decoration:none;color:#000000}}
-div.header p a:hover {{text-decoration:underline;color:#E00000;}}
-h1 {{margin:0; padding:0 0.5em 0 0}}
-h1 a {{text-decoration:none;color:#000000}}
-form {{display:flex;flex-direction:column;flex-wrap:wrap;
-background-color:#eeeeee;border:1px solid #aaaaaa;padding:1em 1em 0 1em}}
-form a {{font-weight:bold;margin-left:0.3em}}
-input {{margin-left:0.5em;min-width:8em}}
-label {{font-weight:bold}}
-textarea {{width:100%;height:8em}}
-div.row {{display:flex;flex-wrap:wrap;justify-content:space-between;
-align-items:center;margin-top:1em}}
-div.row div {{margin-bottom:1em}}
-div.buttons {{align-self:flex-end;margin-bottom:1em;margin-left:auto}}
-div.content img {{width:576px;height:720px;padding:0}}
-div.content pre {{font-size:75%}}
-a:hover {{text-decoration:underline;color:#E00000;}}
-</style>
-{heads}
-<meta name="generator" content="dnacurve" />
-<meta name="robots" content="noarchive" />
-<meta name="format-detection" content="telephone=no" />
-<meta name="viewport" content="width=608px" />
+<meta charset="utf-8">
+<meta name="generator" content="dnacurve.py">
+<meta name="robots" content="noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {{min-width: 576px; margin: 0.5em; padding: 0.25em 0.5em 0 0.5em;}}
+header {{display: flex; flex-wrap: wrap; align-items: baseline;
+ padding-bottom: 0.4em;}}
+header p a {{text-decoration: none; color: #000000;}}
+header p a:hover {{text-decoration: underline; color: #E00000;}}
+h1 {{margin: 0; padding: 0 0.5em 0 0;}}
+h1 a {{text-decoration: none; color: #000000;}}
+form {{display: flex; flex-direction: column; flex-wrap: wrap;
+ background-color: #eeeeee; border: 1px solid #aaaaaa;
+ padding: 1em 1em 0 1em;}}
+form a {{font-weight: bold; margin-left: 0.3em;}}
+input {{margin-left: 0.5em; min-width: 8em;}}
+label {{font-weight: bold;}}
+textarea {{width: 100%; height: 8em;}}
+div.row {{display: flex; flex-wrap: wrap; justify-content: space-between;
+ align-items: center; margin-top: 1em;}}
+div.row div {{margin-bottom: 1em;}}
+div.buttons {{white-space: nowrap; align-self: flex-end;
+ margin-bottom: 1em; margin-left: auto;}}
+div.content img {{width: 576px; height: 720px; padding: 0;}}
+div.content pre {{font-size: 75%;}}
+a:hover {{text-decoration: underline; color: #E00000;}}
+</style>{heads}
 <title>DNA Curvature Analysis v{version}</title>
 </head>
 <body>
-<div class="header">
+<header>
 <h1>DNA Curvature Analysis</h1>
 <p>by <a href="https://www.cgohlke.com">Christoph Gohlke</a></p>
-</div>
-<form id="dnacurve" method="post" action="">
+</header>
+<main>
+<form id="dnacurve" method="post">
 <div>
 <label for="seq">Sequence:</label>
 <span>(max {maxlen:d} nucleotides)</span>
@@ -139,15 +135,16 @@ a:hover {{text-decoration:underline;color:#E00000;}}
 document.forms.dnacurve.submit()" rel="nofollow" title="Show models">?</a>
 </div>
 <div class="buttons">
-<input type="reset" value="Reset" onclick="window.location='{url}'"/>
-<input type="submit" value="Submit" />
-<input type="hidden" name="q" />
+<input type="reset" value="Reset" onclick="window.location='{url}'">
+<input type="submit" value="Submit">
+<input type="hidden" name="q">
 </div>
 </div>
 </form>
 <div class="content">
 {content}
 </div>
+</main>
 </body>
 </html>"""
 
@@ -185,15 +182,15 @@ normal vectors at i-2 and i+2.</li>
 <ul>
 <li><a href="https://www.ncbi.nlm.nih.gov/pubmed/2006170">Curved DNA
 without A-A: experimental estimation of all 16 DNA wedge angles</a>.
-<br />Bolshoy A. et al; Proc Natl Acad Sci USA 88; 2312-6 (1991)</li>
+<br>Bolshoy A. et al; Proc Natl Acad Sci USA 88; 2312-6 (1991)</li>
 <li><a href="https://www.ncbi.nlm.nih.gov/pubmed/7816643">Bending and
-curvature calculations in B-DNA</a>.<br />Goodsell DS; Dickerson RE;
+curvature calculations in B-DNA</a>.<br>Goodsell DS; Dickerson RE;
 Nucleic Acids Res 22; 5497-503 (1994)</li>
 <li><a href="https://www.ncbi.nlm.nih.gov/pubmed/3271483">A comparison
-of six DNA bending models</a>.<br />Tan RK; Harvey SC;
+of six DNA bending models</a>.<br>Tan RK; Harvey SC;
 J Biomol Struct Dyn 5; 497-512 (1987)</li>
 <li><a href="https://www.ncbi.nlm.nih.gov/pubmed/3456570">Curved DNA:
-design, synthesis, and circularization</a>.<br />Ulanovsky L. et al;
+design, synthesis, and circularization</a>.<br>Ulanovsky L. et al;
 Proc Natl Acad Sci USA 83; 862-6 (1986)</li>
 </ul>
 </div>
@@ -215,7 +212,7 @@ Source code is available on
 </div>"""
 
 RESULTS = """<!--h2>Results for {fname}</h2-->
-<img src="data:{mime};name={fname}.{imageext};base64,{plot}" alt="Plot" />
+<img src="data:{mime};name={fname}.{imageext};base64,{plot}" alt="Plot">
 <ul>
 <li><a href='data:text/csv;name={fname}.csv;base64,{csv}'
 download='{fname}.csv'>Calculated values</a> (CSV format)</li>
