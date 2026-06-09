@@ -47,6 +47,7 @@ readme = search(
     code,
     re.MULTILINE | re.DOTALL,
 )
+
 readme = '\n'.join(
     [description, '=' * len(description), *readme.splitlines()[1:]]
 )
@@ -95,11 +96,12 @@ setup(
     project_urls={
         'Bug Tracker': 'https://github.com/cgohlke/dnacurve/issues',
         'Source Code': 'https://github.com/cgohlke/dnacurve',
-        # 'Documentation': 'https://',
+        'Documentation': 'https://www.cgohlke.com/docs/dnacurve/',
     },
     packages=['dnacurve'],
     package_data={'dnacurve': ['py.typed']},
-    install_requires=['numpy', 'matplotlib'],
+    python_requires='>=3.12',
+    install_requires=['numpy>=2.0', 'matplotlib'],
     extras_require={'all': ['Flask']},
     entry_points={
         'console_scripts': [
@@ -108,16 +110,15 @@ setup(
         ]
     },
     platforms=['any'],
-    python_requires='>=3.11',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Science/Research',
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: 3.13',
         'Programming Language :: Python :: 3.14',
+        'Programming Language :: Python :: 3.15',
     ],
 )
