@@ -38,7 +38,7 @@ curvature are calculated at each nucleotide.
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD-3-Clause
-:Version: 2026.1.8
+:Version: 2026.6.9
 :DOI: `10.5281/zenodo.7135499 <https://doi.org/10.5281/zenodo.7135499>`_
 
 Quickstart
@@ -68,13 +68,19 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.11.9, 3.12.10, 3.13.11, 3.14.2 64-bit
-- `NumPy <https://pypi.org/project/numpy>`_ 2.4.0
-- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.10.8
-- `Flask <https://pypi.org/project/Flask/>`_ 3.1.2 (optional)
+- `CPython <https://www.python.org>`_ 3.12.10, 3.13.13, 3.14.5, 3.15.0b2 64-bit
+- `NumPy <https://pypi.org/project/numpy>`_ 2.4.6
+- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.10.9
+- `Flask <https://pypi.org/project/Flask/>`_ 3.1.3 (optional)
 
 Revisions
 ---------
+
+2026.6.9
+
+- Fix code review issues.
+- Use HTML Living Standard in web application.
+- Drop support for Python 3.11, support Python 3.15.
 
 2026.1.8
 
@@ -148,7 +154,7 @@ array([[0.58061616, 0.58163338, 0.58277938, 0.583783  ],
 
 from __future__ import annotations
 
-__version__ = '2026.1.8'
+__version__ = '2026.6.9'
 
 __all__ = [
     'MAXLEN',
@@ -279,6 +285,7 @@ class CurvedDNA:
     """Date and time of analysis."""
 
     _limits: tuple[float, float, float]
+    """Half-extents of bounding box of DNA coordinates."""
 
     def __init__(
         self,
@@ -301,7 +308,7 @@ class CurvedDNA:
             self.sequence = Sequence(sequence, name, maxlen=maxlen)
         size = len(self.sequence)
         if size < self.model.order:
-            msg = f'sequence must be >{self.model.order} nucleotides long'
+            msg = f'sequence must be >={self.model.order} nucleotides long'
             raise ValueError(msg)
         if size > maxlen:
             warnings.warn(
@@ -354,7 +361,9 @@ class CurvedDNA:
             for i in 0, 1, 2:
                 xyz[4, :, i] = numpy.convolve(kernel, xyz[3, :, i], 'same')
             for i in range(5, len(self.sequence) - 5):
-                xyz[4, i, :] /= norm(xyz[4, i, :])
+                vector_norm = norm(xyz[4, i, :])
+                if vector_norm > 0:
+                    xyz[4, i, :] /= vector_norm
 
     def _reorient(self) -> None:
         """Reorient coordinates."""
@@ -365,6 +374,9 @@ class CurvedDNA:
         # normalized end to end vector
         e: NDArray[Any] = +xyz[0]
         e_len = norm(e)
+        if e_len <= 0:
+            # if e_len is zero, DNA is a point - use identity transformation
+            return
         e /= e_len
         # point i of maximum distance to end to end line
         t: NDArray[Any] = numpy.cross(e, xyz)
@@ -374,7 +386,7 @@ class CurvedDNA:
         # distance of endpoint to xyz[i]
         w = norm(xyz[i])
         # distance of endpoint to point on end to end line nearest to xyz[i]
-        u = math.sqrt(w * w - x * x)
+        u = math.sqrt(max(0.0, w * w - x * x))
         # find transformation matrix
         v0: NDArray[Any] = xyz[[0, i, -1]]  # type: ignore[index]
         v1: NDArray[Any] = numpy.array(
@@ -413,7 +425,9 @@ class CurvedDNA:
                 lbc = norm(bc)
                 lac = norm(ac)
                 area = norm(cross(ab, ac))
-                result[i] = (2.0 * area) / (lab * lbc * lac)
+                denominator = lab * lbc * lac
+                if denominator > 0:
+                    result[i] = (2.0 * area) / denominator
 
         # local bend angles from basepair normals
         window = self.windows[1]
@@ -424,9 +438,12 @@ class CurvedDNA:
                 if not numpy.allclose(
                     normals[i - window], normals[i + window]
                 ):
-                    result[i] = arccos(
-                        dot(normals[i - window], normals[i + window])
+                    dot_product = numpy.clip(
+                        dot(normals[i - window], normals[i + window]),
+                        -1.0,
+                        1.0,
                     )
+                    result[i] = arccos(dot_product)
 
         # curvature angles from smoothed basepair normals
         window = self.windows[2]
@@ -437,9 +454,12 @@ class CurvedDNA:
                 if not numpy.allclose(
                     normals[i - window], normals[i + window]
                 ):
-                    result[i] = arccos(
-                        dot(normals[i - window], normals[i + window])
+                    dot_product = numpy.clip(
+                        dot(normals[i - window], normals[i + window]),
+                        -1.0,
+                        1.0,
                     )
+                    result[i] = arccos(dot_product)
 
         self.curvature = numpy.nan_to_num(self.curvature)
 
@@ -469,7 +489,13 @@ class CurvedDNA:
             fh.write(self.pdb())
 
     def csv(self) -> str:
-        """Return coordinates and curvature values in CSV format."""
+        """Return coordinates and curvature values in CSV format.
+
+        Returns:
+            CSV-formatted string with sequence index, curvature values,
+            and helix axis, phosphate, and normal vector coordinates.
+
+        """
         seq = self.sequence
         cur = self.curvature
         xyz = self.coordinates
@@ -496,7 +522,13 @@ class CurvedDNA:
         return ''.join(csv)
 
     def pdb(self) -> str:
-        """Return atomic coordinates in PDB format."""
+        """Return atomic coordinates in PDB format.
+
+        Returns:
+            PDB-formatted string with phosphate atom coordinates for both
+            strands of the DNA double helix.
+
+        """
         pdb: list[str] = []
 
         def pdb_append(line: str) -> None:
@@ -535,7 +567,7 @@ class CurvedDNA:
                 f'    {x:8.3f}{y:8.3f}{z:8.3f}  1.00  0.00           P'
             )
             serial += 1
-        pdb_append(f'TER   {serial:5}       D{seq[i]:<1s} A{serial - 1:4}')
+        pdb_append(f'TER   {serial:5}       D{seq[-1]:<1s} A{serial - 1:4}')
 
         serial += 1
         for i in range(seqlen):
@@ -545,7 +577,7 @@ class CurvedDNA:
                 f'    {x:8.3f}{y:8.3f}{z:8.3f}  1.00  0.00           P'
             )
             serial += 1
-        pdb_append(f'TER   {serial:5}       D{seq[i]:<1s} B{serial - 1:4}')
+        pdb_append(f'TER   {serial:5}       D{seqi[-1]:<1s} B{serial - 1:4}')
         pdb_append('END')
         return ''.join(pdb)
 
@@ -696,11 +728,11 @@ class CurvedDNA:
 
         if arg is True:
             pyplot.show()
-        elif arg:
+            return None
+        if arg:
             fig.savefig(arg, dpi=dpi, format=imageformat)
-        else:
-            return fig
-        return None
+            return None
+        return fig
 
     @property
     def name(self) -> str:
@@ -730,11 +762,13 @@ class Model:
 
             - **None**: :py:attr:`Model.STRAIGHT`.
             - **Model**: :py:class:`Model` instance.
-            - **dict**: Specifies :py:attr:`Model.name`, :py:attr:`Model.oligo`
-              :py:attr:`Model.twist`, :py:attr:`Model.roll`,
-              :py:attr:`Model.tilt`, and :py:attr:`Model.rise`.
+            - **dict**: Specifies :py:attr:`Model.name`,
+              :py:attr:`Model.oligo`, :py:attr:`Model.twist`,
+              :py:attr:`Model.roll`, :py:attr:`Model.tilt`,
+              and :py:attr:`Model.rise`.
             - **str**: Name of predefined model, 'straight', 'aawedge',
-              'trifonov', 'desantis', 'calladine', or 'reversed'.
+              'trifonov', 'desantis', 'calladine', 'reversed',
+              'nucleosome', or 'trinucleotide'.
             - **Path**: File containing model parameters.
         **kwargs:
             Additional arguments to modify model:
@@ -886,7 +920,7 @@ class Model:
     Order 2 is a dinucleotide model, order 3 a trinucleotide model.
     """
 
-    oligos: tuple[str]
+    oligos: tuple[str, ...]
     """All oligonucleotides of length :py:attr:`Model.order`."""
 
     rise: float
@@ -934,7 +968,7 @@ class Model:
         modeldict.update(kwargs)
 
         try:
-            self.oligos = modeldict['oligo'].split()
+            self.oligos = tuple(modeldict['oligo'].split())
         except Exception:
             self.oligos = modeldict['oligo']
         self.order = len(self.oligos[0])
@@ -986,20 +1020,25 @@ class Model:
 
     def _fromname(self, name: str, /) -> dict[str, Any]:
         """Return predefined model parameters as dict."""
-        return getattr(Model, name.upper())  # type: ignore[no-any-return]
+        return dict(getattr(Model, name.upper()))
 
-    def _fromclass(self, aclass: Model, /) -> dict[str, Any]:
-        """Return model parameters as dict from class."""
-        return {a: getattr(aclass, a) for a in Model.STRAIGHT}
+    def _fromclass(self, model: Model | type[Model], /) -> dict[str, Any]:
+        """Return model parameters as dict from Model class or instance."""
+        return {a: getattr(model, a) for a in Model.STRAIGHT}
 
     def _fromdict(self, adict: dict[str, Any], /) -> dict[str, Any]:
         """Return model parameters as dict from dictionary."""
         for attr in Model.STRAIGHT:
             adict[attr]
-        return adict
+        return dict(adict)
 
     def write(self, path: os.PathLike[Any] | str, /) -> None:
-        """Write model to file."""
+        """Write model to file.
+
+        Parameters:
+            path: Name of file to write.
+
+        """
         with open(path, 'w', encoding='latin-1', newline='\n') as fh:
             fh.write(str(self))
 
@@ -1093,7 +1132,7 @@ class Sequence:
         comment: str = '',
         maxlen: int = 1024 * 1024,
     ) -> None:
-        self.name = name if name else 'Untitled'
+        self.name = name or 'Untitled'
         self.comment = comment
         self._sequence = ''
         if os.path.isfile(arg):
@@ -1156,7 +1195,7 @@ class Sequence:
 
         Parameters:
             block: Length of blocks.
-            Line: Line length.
+            line: Line length.
 
         """
         blocks = chunks(self._sequence, block)
@@ -1245,6 +1284,10 @@ def unique_oligos(length: int, /, nucleotides: str = 'AGCT') -> Iterator[str]:
         length: Length of oligonucleotides to generate.
         nucleotides: Nucleotides in oligonucleotides.
 
+    Yields:
+        Unique oligonucleotide sequence of length, excluding reverse
+        complements.
+
     Examples:
         >>> ' '.join(unique_oligos(2))
         'AA AG AC AT GA GG GC CA CG TA'
@@ -1310,7 +1353,7 @@ def dinuc_window(
 
     """
     if not 1 < size <= len(sequence):
-        msg = f'{size=} out of range [1, {len(sequence)=}]'
+        msg = f'{size=} out of range [2, {len(sequence)=}]'
         raise ValueError(msg)
     border = size // 2
     for _i in range(border - 1):
@@ -1331,6 +1374,9 @@ def dinucleotide_matrix(
         twist: Rotation angle in deg about the Z axis.
         roll: Rotation angle in deg about the Y axis.
         tilt: Rotation angle in deg about the X axis.
+
+    Returns:
+        4x4 homogeneous transformation matrix.
 
     """
     twist = math.radians(twist)
@@ -1370,6 +1416,10 @@ def superimpose_matrix(v0: NDArray[Any], v1: NDArray[Any], /) -> NDArray[Any]:
         v0: Given vector set.
         v1: Target vector set.
 
+    Returns:
+        4x4 homogeneous transformation matrix that best superimposes v0
+        onto v1 using SVD.
+
     """
     # move centroids to origin
     t0 = numpy.mean(v0, axis=0)
@@ -1408,6 +1458,9 @@ def main(argv: list[str] | None = None, /) -> int:
 
     Parameters:
         argv: Command line arguments.
+
+    Returns:
+        Exit code; 0 on success.
 
     """
     if argv is None:
