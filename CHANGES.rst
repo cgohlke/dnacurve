@@ -1,6 +1,12 @@
 Revisions
 ---------
 
+2026.6.9
+
+- Fix code review issues.
+- Use HTML Living Standard in web application.
+- Drop support for Python 3.11, support Python 3.15.
+
 2026.1.8
 
 - Improve code quality.
