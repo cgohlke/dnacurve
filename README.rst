@@ -11,7 +11,7 @@ curvature are calculated at each nucleotide.
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD-3-Clause
-:Version: 2026.1.8
+:Version: 2026.6.9
 :DOI: `10.5281/zenodo.7135499 <https://doi.org/10.5281/zenodo.7135499>`_
 
 Quickstart
@@ -41,13 +41,19 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.11.9, 3.12.10, 3.13.11, 3.14.2 64-bit
-- `NumPy <https://pypi.org/project/numpy>`_ 2.4.0
-- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.10.8
-- `Flask <https://pypi.org/project/Flask/>`_ 3.1.2 (optional)
+- `CPython <https://www.python.org>`_ 3.12.10, 3.13.13, 3.14.5, 3.15.0b2 64-bit
+- `NumPy <https://pypi.org/project/numpy>`_ 2.4.6
+- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.10.9
+- `Flask <https://pypi.org/project/Flask/>`_ 3.1.3 (optional)
 
 Revisions
 ---------
+
+2026.6.9
+
+- Fix code review issues.
+- Use HTML Living Standard in web application.
+- Drop support for Python 3.11, support Python 3.15.
 
 2026.1.8
 
