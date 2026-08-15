@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="author" content="Christoph Gohlke">
+<meta name="generator" content="dnacurve.py">
+<meta name="robots" content="noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/cgohlke.ico" type="image/x-icon">
+<style>
+body {min-width: 455px; margin: 0.5em; padding: 0.25em 0.5em 0 0.5em;}
+header {display: flex; flex-wrap: wrap; align-items: baseline;
+ padding-bottom: 0.4em;}
+header p a {text-decoration: none; color: #000000;}
+header p a:hover {text-decoration: underline; color: #E00000;}
+h1 {margin: 0; padding: 0 0.5em 0 0;}
+h1 a {text-decoration: none; color: #000000;}
+form {display: flex; flex-direction: column; flex-wrap: wrap;
+ background-color: #eeeeee; border: 1px solid #aaaaaa;
+ padding: 1em 1em 0 1em;}
+form a {font-weight: bold; margin-left: 0.3em;}
+input {margin-left: 0.5em; min-width: 8em;}
+label {font-weight: bold;}
+textarea {width: 100%; height: 8em;}
+div.row {display: flex; flex-wrap: wrap; justify-content: space-between;
+ align-items: center; margin-top: 1em;}
+div.row div {margin-bottom: 1em;}
+div.buttons {white-space: nowrap; align-self: flex-end;
+ margin-bottom: 1em; margin-left: auto;}
+div.content img {width: 100%; max-width: 580px; padding: 0;}
+div.content pre {font-size: 75%;}
+a:hover {text-decoration: underline; color: #E00000;}
+#loading {padding: 0.5em 0; color: #666666;}
+</style>
+<title>DNA Curvature Analysis | Christoph Gohlke</title>
+</head>
+<body>
+<header>
+<h1>DNA Curvature Analysis</h1>
+<p>by <a href="https://www.cgohlke.com">Christoph Gohlke</a></p>
+</header>
+<main>
+<form id="dnacurve" method="post">
+<div>
+<label for="seq">Sequence:</label>
+<span>(max <span id="maxlen">510</span> nucleotides)</span>
+</div>
+<div class="textarea">
+<textarea name="seq" id="seq" rows="4" cols="50" disabled></textarea>
+</div>
+<div class="row">
+<div>
+<label for="mod">Model:</label>
+<select name="mod" id="mod" disabled>
+<option value="AAWEDGE">AA Wedge</option>
+<option value="TRIFONOV" selected>Bolshoi &amp; Trifonov</option>
+<option value="DESANTIS">Cacchione &amp; De Santis</option>
+<option value="CALLADINE">Calladine &amp; Drew</option>
+<option value="TRINUCLEOTIDE">DNAse I Consensus</option>
+<option value="NUCLEOSOME">Nucleosome Positioning</option>
+<option value="REVERSED">Reversed Calladine &amp; Drew</option>
+<option value="STRAIGHT">Straight</option>
+</select>
+<a id="models-link" href="#" rel="nofollow" title="Show models">?</a>
+</div>
+<div class="buttons">
+<input type="button" id="reset" value="Reset" disabled>
+<input type="submit" id="submit" value="Submit" disabled>
+</div>
+</div>
+</form>
+<p id="loading">Loading Pyodide&#8230;</p>
+<div class="content"></div>
+</main>
+<script src="https://cdn.jsdelivr.net/pyodide/v314.0.4/full/pyodide.js"></script>
+<script>
+(async () => {
+  const content = document.querySelector('.content');
+  const loading = document.getElementById('loading');
+  const seqInput = document.getElementById('seq');
+  const modSelect = document.getElementById('mod');
+  const submitBtn = document.getElementById('submit');
+  const resetBtn = document.getElementById('reset');
+  const modelsLink = document.getElementById('models-link');
+  const maxlenSpan = document.getElementById('maxlen');
+  const form = document.getElementById('dnacurve');
+
+  let pyAnalyze = null;
+  let pyGetModelsHtml = null;
+  let help = '';
+
+  async function init() {
+    try {
+      const pyodide = await loadPyodide();
+      loading.textContent = 'Installing dnacurve\u2026';
+      await pyodide.loadPackage(['numpy', 'matplotlib', 'micropip']);
+      const micropip = pyodide.pyimport('micropip');
+      await micropip.install('dnacurve');
+      await pyodide.runPythonAsync(`
+import matplotlib
+matplotlib.use('Agg')
+import dnacurve
+from dnacurve import __version__, Sequence, MAXLEN
+from dnacurve.web import analyze, models, HELP
+
+help_ = HELP.format(
+    version=__version__,
+    s1=''.join(Sequence.KINETOPLAST.split())[:MAXLEN],
+    s2=(Sequence.PHASED_AAAAAA * 14)[:MAXLEN],
+)
+`);
+      pyAnalyze = pyodide.globals.get('analyze');
+      pyModels = pyodide.globals.get('models');
+      const version = pyodide.runPython('__version__');
+      const maxlen = pyodide.runPython('MAXLEN');
+      help = pyodide.runPython('help_');
+
+      // document.title = `DNA Curvature Analysis v${version}`;
+      maxlenSpan.textContent = maxlen;
+      loading.style.display = 'none';
+      seqInput.disabled = false;
+      modSelect.disabled = false;
+      submitBtn.disabled = false;
+      resetBtn.disabled = false;
+
+      const params = new URLSearchParams(location.search);
+      const seq = params.get('seq') ?? '';
+      const mod = params.get('mod') ?? '';
+      if (seq) seqInput.value = seq;
+      if (mod) {
+        const opt = modSelect.querySelector(`option[value="${CSS.escape(mod)}"]`);
+        if (opt) modSelect.value = mod;
+      }
+      handleQuery(seq.trim(), modSelect.value);
+    } catch (err) {
+      loading.textContent = `Initialization failed: ${err.message}`;
+    }
+  }
+
+  function handleQuery(seq, mod) {
+    if (!pyAnalyze) return;
+    content.innerHTML = seq ? pyAnalyze(seq, mod) : help;
+  }
+
+  function navigate(seq, mod) {
+    seq = seq.trim();
+    seqInput.value = seq;
+    const params = new URLSearchParams();
+    if (seq) params.set('seq', seq);
+    if (mod && mod !== 'TRIFONOV') params.set('mod', mod);
+    const qs = params.toString();
+    history.pushState({ seq, mod }, '', qs ? `?${qs}` : location.pathname);
+    handleQuery(seq, mod);
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    navigate(seqInput.value, modSelect.value);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    navigate('', modSelect.value);
+  });
+
+  modelsLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!pyModels) return;
+    content.innerHTML = pyModels();
+  });
+
+  window.addEventListener('popstate', (e) => {
+    const seq = e.state?.seq ?? new URLSearchParams(location.search).get('seq') ?? '';
+    const mod = e.state?.mod ?? new URLSearchParams(location.search).get('mod') ?? modSelect.value;
+    seqInput.value = seq;
+    const opt = modSelect.querySelector(`option[value="${CSS.escape(mod)}"]`);
+    if (opt) modSelect.value = mod;
+    handleQuery(seq.trim(), mod);
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>
