@@ -1,6 +1,10 @@
 Revisions
 ---------
 
+2026.8.15
+
+- Add HTML application based on Pyodide.
+
 2026.6.9
 
 - Fix code review issues.
