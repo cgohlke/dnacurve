@@ -38,7 +38,7 @@ curvature are calculated at each nucleotide.
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD-3-Clause
-:Version: 2026.6.9
+:Version: 2026.8.15
 :DOI: `10.5281/zenodo.7135499 <https://doi.org/10.5281/zenodo.7135499>`_
 
 Quickstart
@@ -68,13 +68,17 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.12.10, 3.13.13, 3.14.5, 3.15.0b2 64-bit
-- `NumPy <https://pypi.org/project/numpy>`_ 2.4.6
-- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.10.9
+- `CPython <https://www.python.org>`_ 3.12.10, 3.13.15, 3.14.7, 3.15.0rc 64-bit
+- `Numpy <https://pypi.org/project/numpy>`_ 2.5.2
+- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.11.1
 - `Flask <https://pypi.org/project/Flask/>`_ 3.1.3 (optional)
 
 Revisions
 ---------
+
+2026.8.15
+
+- Add HTML application based on Pyodide.
 
 2026.6.9
 
@@ -154,7 +158,7 @@ array([[0.58061616, 0.58163338, 0.58277938, 0.583783  ],
 
 from __future__ import annotations
 
-__version__ = '2026.6.9'
+__version__ = '2026.8.15'
 
 __all__ = [
     'MAXLEN',
@@ -292,6 +296,7 @@ class CurvedDNA:
         sequence: Sequence | os.PathLike[Any] | str,
         /,
         model: Model | os.PathLike[Any] | str = 'trifonov',
+        *,
         name: str = 'Untitled',
         curvature_window: int = 10,
         bend_window: int = 2,
@@ -500,7 +505,7 @@ class CurvedDNA:
         cur = self.curvature
         xyz = self.coordinates
         csv = [
-            'Sequence,Index,'
+            'Sequence,Index,'  # noqa: ISC004
             f'Curvature / {self.scales[0, 0]:.4f} [{self.windows[0]}],'
             f'Bend Angle / {self.scales[1, 0]:.4f}  [{self.windows[1]}],'
             f'Curvature Angle / {self.scales[2, 0]:.4f}  [{self.windows[2]}],'
@@ -1439,7 +1444,7 @@ def superimpose_matrix(v0: NDArray[Any], v1: NDArray[Any], /) -> NDArray[Any]:
     m[0:3, 0:3] = r
     m[:3, 3] = t1
     t[0:3, 3] = -t0
-    return numpy.dot(m, t)  # type: ignore[no-any-return]
+    return numpy.dot(m, t)
 
 
 def norm(vector: NDArray[Any], /) -> float:
