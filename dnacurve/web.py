@@ -59,7 +59,7 @@ Instead, for example, create a Flask app and serve it on a production server::
 
 from __future__ import annotations
 
-__all__ = ['main', 'response']
+__all__ = ['HELP', 'main', 'models', 'response']
 
 import base64
 import hashlib
@@ -82,11 +82,12 @@ PAGE = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="author" content="Christoph Gohlke">
 <meta name="generator" content="dnacurve.py">
 <meta name="robots" content="noarchive">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body {{min-width: 576px; margin: 0.5em; padding: 0.25em 0.5em 0 0.5em;}}
+body {{min-width: 455px; margin: 0.5em; padding: 0.25em 0.5em 0 0.5em;}}
 header {{display: flex; flex-wrap: wrap; align-items: baseline;
  padding-bottom: 0.4em;}}
 header p a {{text-decoration: none; color: #000000;}}
@@ -105,7 +106,7 @@ div.row {{display: flex; flex-wrap: wrap; justify-content: space-between;
 div.row div {{margin-bottom: 1em;}}
 div.buttons {{white-space: nowrap; align-self: flex-end;
  margin-bottom: 1em; margin-left: auto;}}
-div.content img {{width: 576px; height: 720px; padding: 0;}}
+div.content img {{width: 100%; max-width: 580px; padding: 0;}}
 div.content pre {{font-size: 75%;}}
 a:hover {{text-decoration: underline; color: #E00000;}}
 </style>{heads}
@@ -259,14 +260,7 @@ def response(
     if form.get('q', '') == 'version':
         content = f'<p>Version: {dnacurve.__version__}</p>'
     elif form.get('q', '') == 'models':
-        content_list = ['<h2>Curvature Models</h2>']
-        for model in dnacurve.MODELS:
-            lines = str(dnacurve.Model(model)).splitlines()
-            content_list.append(f'<h3>{escape(lines[0])}</h3>')
-            content_list.append(
-                '<pre>{}</pre>'.format(escape('\n'.join(lines[1:])))
-            )
-        content = '\n'.join(content_list)
+        content = models()
     elif seq:
         content = analyze(seq, mod, maxlen)
     else:
@@ -276,19 +270,18 @@ def response(
             s2=(dnacurve.Sequence.PHASED_AAAAAA * 14)[:maxlen],
         )
 
-    options = []
+    models_list = []
     for model in dnacurve.MODELS:
         if model == mod:
             option = '<option value="{}" selected="selected">{}</option>'
         else:
             option = '<option value="{}">{}</option>'
         label = getattr(dnacurve.Model, model)['name']
-        options.append(option.format(escape(model), escape(label)))
-    optionstr = '\n'.join(options)
+        models_list.append(option.format(escape(model), escape(label)))
 
     return template.format(
         sequence=escape(seq),
-        models=optionstr,
+        models='\n'.join(models_list),
         content=content,
         url=url,
         version=dnacurve.__version__,
@@ -297,11 +290,21 @@ def response(
     )
 
 
+def models() -> str:
+    """Return curvature models as HTML string."""
+    parts = ['<h2>Curvature Models</h2>']
+    for model in dnacurve.MODELS:
+        lines = str(dnacurve.Model(model)).splitlines()
+        parts.append(f'<h3>{escape(lines[0])}</h3>')
+        parts.append('<pre>{}</pre>'.format(escape('\n'.join(lines[1:]))))
+    return '\n'.join(parts)
+
+
 def analyze(
     sequence: str,
     model: str,
-    maxlen: int,
     /,
+    maxlen: int = dnacurve.MAXLEN,
     *,
     template: str | None = None,
     imageformat: str = 'svg',
