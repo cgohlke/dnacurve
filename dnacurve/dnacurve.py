@@ -38,7 +38,7 @@ curvature are calculated at each nucleotide.
 
 :Author: `Christoph Gohlke <https://www.cgohlke.com>`_
 :License: BSD-3-Clause
-:Version: 2026.8.15
+:Version: 2026.10.22
 :DOI: `10.5281/zenodo.7135499 <https://doi.org/10.5281/zenodo.7135499>`_
 
 Quickstart
@@ -57,7 +57,10 @@ Run the web application::
 
     python -m dnacurve --web
 
-See `Examples`_ for using the programming interface.
+See `Examples`_ and `Documentation <https://www.cgohlke.com/docs/dnacurve/>`_
+for using the programming interface.
+
+Try the online calculator at https://www.cgohlke.com/dnacurve/.
 
 Source code and support are available on
 `GitHub <https://github.com/cgohlke/dnacurve>`_.
@@ -68,13 +71,24 @@ Requirements
 This revision was tested with the following requirements and dependencies
 (other versions may work):
 
-- `CPython <https://www.python.org>`_ 3.12.10, 3.13.15, 3.14.7, 3.15.0rc 64-bit
-- `Numpy <https://pypi.org/project/numpy>`_ 2.5.2
-- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.11.1
+- `CPython <https://www.python.org>`_ 3.12.10, 3.13.17, 3.14.9, 3.15.1 64-bit
+- `Numpy <https://pypi.org/project/numpy>`_ 2.5.4
+- `Matplotlib <https://pypi.org/project/matplotlib/>`_ 3.11.2
 - `Flask <https://pypi.org/project/Flask/>`_ 3.1.3 (optional)
 
 Revisions
 ---------
+
+2026.10.22
+
+- Fix initializing Model from Model instance.
+- Fix maxlen not enforced for Sequence instances in CurvedDNA.
+- Fix comments in sequence files discarded.
+- Fix main function ignoring argv argument.
+- Fix command line returning exit code 0 on failure.
+- Replace optparse with argparse.
+- Add maxlen command line option.
+- Add DNACURVE_MAXLEN environment variable to web application.
 
 2026.8.15
 
@@ -87,25 +101,6 @@ Revisions
 - Drop support for Python 3.11, support Python 3.15.
 
 2026.1.8
-
-- Improve code quality.
-
-2025.12.12
-
-- Remove unused overlapping_chunks function.
-- Drop support for Python 3.10, support Python 3.14.
-
-2025.5.8
-
-- Remove deprecated save functions (breaking).
-- Remove doctest command line option.
-
-2025.1.1
-
-- Improve type hints.
-- Drop support for Python 3.9, support Python 3.13.
-
-2024.5.24
 
 - …
 
@@ -158,7 +153,7 @@ array([[0.58061616, 0.58163338, 0.58277938, 0.583783  ],
 
 from __future__ import annotations
 
-__version__ = '2026.8.15'
+__version__ = '2026.10.22'
 
 __all__ = [
     'MAXLEN',
@@ -308,6 +303,15 @@ class CurvedDNA:
         else:
             self.model = Model(model)
         if isinstance(sequence, Sequence):
+            if maxlen and len(sequence) > maxlen:
+                fname = sequence.fname
+                sequence = Sequence(
+                    sequence.string,
+                    sequence.name,
+                    sequence.comment,
+                    maxlen=maxlen,
+                )
+                sequence.fname = fname
             self.sequence = sequence
         else:
             self.sequence = Sequence(sequence, name, maxlen=maxlen)
@@ -315,10 +319,6 @@ class CurvedDNA:
         if size < self.model.order:
             msg = f'sequence must be >={self.model.order} nucleotides long'
             raise ValueError(msg)
-        if size > maxlen:
-            warnings.warn(
-                f'sequence is longer than {maxlen} nucleotides', stacklevel=2
-            )
 
         if not 0 < curvature_window < 21:
             msg = f'{curvature_window=} out of range [1, 20]'
@@ -815,6 +815,7 @@ class Model:
         tilt =  (0.0, ) * 10,
         rise = 3.38,
     )
+    """Straight DNA model."""
 
     AAWEDGE: ClassVar[dict[str, Any]] = dict(
         name = 'AA Wedge',
@@ -824,6 +825,7 @@ class Model:
         tilt =  ( 2.40,  0.0,  0.0,  0.0,  0.0,   0.0,  0.0,  0.0,  0.0,  0.0),
         rise = 3.38,
     )
+    """AA Wedge DNA model."""
 
     CALLADINE: ClassVar[dict[str, Any]] = dict(
         # Nucleic Acids Res, 1994, 22(24), p 5498, Table 1, Model b.
@@ -834,6 +836,7 @@ class Model:
         tilt =  ( 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0),
         rise = 3.38,
     )
+    """Calladine & Drew DNA model."""
 
     TRIFONOV: ClassVar[dict[str, Any]] = dict(
         # Nucleic Acids Res, 1994, 22(24), p 5498, Table 1, Model c.
@@ -844,6 +847,7 @@ class Model:
         tilt =  ( 3.20, -0.7, -0.3,  0.0,  3.1,  -1.8,  0.0, -4.6,  0.0,  0.0),
         rise = 3.38,
     )
+    """Bolshoi & Trifonov DNA model."""
 
     DESANTIS: ClassVar[dict[str, Any]] = dict(
         # Nucleic Acids Res, 1994, 22(24), p 5498, Table 1, Model d.
@@ -854,6 +858,7 @@ class Model:
         tilt =  (-0.5, -2.7, -1.6,  0.0,  0.4, -0.6,  0.0, -1.7,  0.0,  0.0),
         rise = 3.38,
     )
+    """Cacchione & De Santis DNA model."""
 
     REVERSED: ClassVar[dict[str, Any]] = dict(
         # Nucleic Acids Res, 1994, 22(24), p 5498, Table 1, Model e.
@@ -864,6 +869,7 @@ class Model:
         tilt =  ( 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0),
         rise = 3.38,
     )
+    """Reversed Calladine & Drew DNA model."""
 
     NUCLEOSOME: ClassVar[dict[str, Any]] = dict(
         # Nucleic Acids Res, 1994, 22(24), p 5498, Table 1, Model a.
@@ -889,6 +895,7 @@ class Model:
         tilt =  (0.0, ) * 64,
         rise = 3.38,
     )
+    """Nucleosome Positioning DNA model."""
 
     TRINUCLEOTIDE: ClassVar[dict[str, Any]] = dict(
         # Trends Biochem Sci, 1998, 23(9), p 341, Table 1, consensus scale.
@@ -914,6 +921,7 @@ class Model:
         tilt =  (0.0, ) * 64,
         rise = 3.4,
     )
+    """DNAse I Consensus DNA model."""
     # fmt: on
 
     name: str
@@ -1029,6 +1037,15 @@ class Model:
 
     def _fromclass(self, model: Model | type[Model], /) -> dict[str, Any]:
         """Return model parameters as dict from Model class or instance."""
+        if isinstance(model, Model):
+            return {
+                'name': model.name,
+                'oligo': model.oligos,
+                'rise': model.rise,
+                'twist': tuple(model.twist[o] for o in model.oligos),
+                'roll': tuple(model.roll[o] for o in model.oligos),
+                'tilt': tuple(model.tilt[o] for o in model.oligos),
+            }
         return {a: getattr(model, a) for a in Model.STRAIGHT}
 
     def _fromdict(self, adict: dict[str, Any], /) -> dict[str, Any]:
@@ -1113,10 +1130,16 @@ class Sequence:
         CCATTTTTTC AATTTTCGTG TGAAACTAGG GGTTGGTGTA AAATAGGGGT GGGGCTCCCC
         GGGGTAATTC TGGAAATTCG GGCCCTCAGG CTAGACCGGT CAAAATTAGG CCTCCTGACC
         CGTATATTTT TGGATTTCTA AATTTTGTGG CTTTAGATGT GGGAGATTTG GATC"""
+    """Kinetoplast DNA sequence."""
 
     OUT_OF_PHASE_AAAAAA = 'CGCGCGCAAAAAACG'
+    """Out-of-phase AAAAAA block DNA sequence."""
+
     PHASED_AAAAAA = 'CGAAAAAACG'
+    """Phased AAAAAA block DNA sequence."""
+
     PHASED_GGGCCC = 'GAGGGCCCTA'
+    """Phased GGGCCC block DNA sequence."""
 
     name: str
     """Name of sequence."""
@@ -1152,7 +1175,7 @@ class Sequence:
         for sep in (None, '|', ',', ';', '>', '<'):
             self.name = self.name.split(sep, 1)[0]
         self.name = self.name[:32]
-        self.comment = (comment + ' ').splitlines()[0].strip()
+        self.comment = (self.comment + ' ').splitlines()[0].strip()
 
         # remove all but ATCG from sequence
         nucls = dict(zip('ATCGatcg', 'ATCGATCG', strict=True))
@@ -1471,8 +1494,7 @@ def main(argv: list[str] | None = None, /) -> int:
     if argv is None:
         argv = sys.argv
 
-    # TODO: use argparse module
-    import optparse
+    import argparse
 
     def search_doc(r: str, d: str) -> str:
         if not __doc__:
@@ -1482,13 +1504,28 @@ def main(argv: list[str] | None = None, /) -> int:
             return d
         return match.group(1)
 
-    parser = optparse.OptionParser(
-        usage='usage: %prog [options] sequence | file',
-        description=search_doc('\n\n([^|]*?)\n\n', ''),
-        version=f'%prog {__version__}',
+    def positive_int(value: str) -> int:
+        try:
+            result = int(value)
+        except ValueError:
+            result = 0
+        if result < 1:
+            msg = f'invalid positive integer {value!r}'
+            raise argparse.ArgumentTypeError(msg)
+        return result
+
+    parser = argparse.ArgumentParser(
         prog='dnacurve',
+        description=search_doc('\n\n([^|]*?)\n\n', ''),
     )
-    opt = parser.add_option
+    opt = parser.add_argument
+    opt(
+        'sequence_list',
+        nargs='*',
+        metavar='sequence | file',
+        help='nucleotide sequence or name of sequence file',
+    )
+    opt('--version', action='version', version=f'%(prog)s {__version__}')
     opt(
         '-m',
         '--model',
@@ -1516,17 +1553,20 @@ def main(argv: list[str] | None = None, /) -> int:
         '--plot',
         dest='plot',
         action='store_true',
-        default=False,
         help='plot to interactive window',
     )
+    opt('--dpi', dest='dpi', type=int, default=96, help='set plot resolution')
     opt(
-        '--dpi', dest='dpi', type='int', default=96, help='set plot resolution'
+        '--maxlen',
+        dest='maxlen',
+        type=positive_int,
+        default=None,
+        help=f'set maximum sequence length (default {MAXLEN})',
     )
     opt(
         '--web',
         dest='web',
         action='store_true',
-        default=False,
         help='start web application and open it in a web browser',
     )
     opt(
@@ -1539,20 +1579,32 @@ def main(argv: list[str] | None = None, /) -> int:
         '--nobrowser',
         dest='nobrowser',
         action='store_true',
-        default=False,
         help='do not open web browser',
     )
     opt(
         '--test',
         dest='test',
         action='store_true',
-        default=False,
         help='analyze a test sequence',
     )
-    opt('-v', '--verbose', dest='verbose', action='store_true', default=True)
-    opt('-q', '--quiet', dest='verbose', action='store_false')
+    opt(
+        '-v',
+        '--verbose',
+        dest='verbose',
+        action='store_true',
+        default=True,
+        help='print results (default)',
+    )
+    opt(
+        '-q',
+        '--quiet',
+        dest='verbose',
+        action='store_false',
+        help='do not print results',
+    )
 
-    settings, sequence_list = parser.parse_args()
+    settings = parser.parse_args(argv[1:])
+    sequence_list = settings.sequence_list
 
     if settings.web:
         try:
@@ -1560,7 +1612,11 @@ def main(argv: list[str] | None = None, /) -> int:
         except ImportError:
             from web import main as web_main  # type: ignore[no-redef]
 
-        return web_main(settings.url, open_browser=not settings.nobrowser)
+        return web_main(
+            settings.url,
+            open_browser=not settings.nobrowser,
+            maxlen=settings.maxlen,
+        )
     if settings.test:
         settings.name = 'Kinetoplast'
         sequence = Sequence.KINETOPLAST
@@ -1581,10 +1637,15 @@ def main(argv: list[str] | None = None, /) -> int:
     settings.ps = file_ext(settings.ps, '.ps')
 
     try:
-        results = CurvedDNA(sequence, settings.model, name=settings.name)
+        results = CurvedDNA(
+            sequence,
+            settings.model,
+            name=settings.name,
+            maxlen=settings.maxlen or MAXLEN,
+        )
     except Exception as exc:
         print('\nFatal Error: \n  ', exc, sep='')  # noqa: T201
-        # raise
+        return 1
     else:
         if settings.verbose:
             print('\n', results, sep='')  # noqa: T201
