@@ -1,5 +1,19 @@
+..
+  This file is updated by setup.py. Do not edit.
+
 Revisions
----------
+=========
+
+2026.10.22
+
+- Fix initializing Model from Model instance.
+- Fix maxlen not enforced for Sequence instances in CurvedDNA.
+- Fix comments in sequence files discarded.
+- Fix main function ignoring argv argument.
+- Fix command line returning exit code 0 on failure.
+- Replace optparse with argparse.
+- Add maxlen command line option.
+- Add DNACURVE_MAXLEN environment variable to web application.
 
 2026.8.15
 
