@@ -44,6 +44,9 @@ To run in CGI mode, this script must be made executable on UNIX systems::
 
     chmod +x ./web.py
 
+Set the maximum sequence length with the ``DNACURVE_MAXLEN`` environment
+variable.
+
 Do not run the built-in Flask or CGI servers in a production deployment.
 Instead, for example, create a Flask app and serve it on a production server::
 
@@ -229,7 +232,7 @@ def response(
     *,
     template: str | None = None,
     help: str | None = None,  # noqa: A002
-    maxlen: int = dnacurve.MAXLEN,
+    maxlen: int | None = None,
     heads: str = '',
 ) -> str:
     """Return HTML document from submitted form data.
@@ -240,11 +243,13 @@ def response(
         url:
             URL of web application.
         template:
-            HTML page template. The default is dnacurve.web.PAGE.
+            HTML page template. The default is :py:const:`dnacurve.web.PAGE`.
         help:
-            Help text. The default is dnacurve.web.HELP.
+            Help text. The default is :py:const:`dnacurve.web.HELP`.
         maxlen:
             Maximum length of DNA sequence.
+            The default is the ``DNACURVE_MAXLEN`` environment variable
+            or :py:const:`dnacurve.MAXLEN`.
         heads:
             Additional HTML page head sections.
 
@@ -253,6 +258,8 @@ def response(
         template = PAGE
     if help is None:
         help = HELP  # noqa: A001
+    if maxlen is None:
+        maxlen = env_maxlen()
 
     seq = form.get('seq', '').strip()
     mod = form.get('mod', '')
@@ -319,9 +326,10 @@ def analyze(
         maxlen:
             Maximum length of DNA sequence to analyze.
         template:
-            HTML template for results. The default is dnacurve.web.RESULTS.
+            HTML template for results.
+            The default is :py:const:`dnacurve.web.RESULTS`.
         imageformat:
-            Format of embedded images. Either 'svg' (default) or 'png'.
+            Format of embedded images. Either ``'svg'`` (default) or ``'png'``.
 
     """
     if template is None:
@@ -338,7 +346,7 @@ def analyze(
         seq.name = name[:13]
         fname = name + str(dnacurve.MODELS.index(model))
         mod = dnacurve.Model(model)
-        results = dnacurve.CurvedDNA(seq, mod)
+        results = dnacurve.CurvedDNA(seq, mod, maxlen=maxlen)
         with io.BytesIO() as fh:
             results.plot(fh, imageformat=imageformat)
             plot = b64encode(fh.getvalue())
@@ -362,6 +370,21 @@ def analyze(
         mime=mime,
         imageext=imageformat,
     )
+
+
+def env_maxlen() -> int:
+    """Return maximum sequence length from DNACURVE_MAXLEN or default."""
+    value = os.environ.get('DNACURVE_MAXLEN', '').strip()
+    if not value:
+        return dnacurve.MAXLEN
+    try:
+        maxlen = int(value)
+    except ValueError:
+        maxlen = 0
+    if maxlen < 1:
+        msg = f'invalid DNACURVE_MAXLEN {value!r}'
+        raise ValueError(msg)
+    return maxlen
 
 
 def b64encode(arg: str | bytes, /) -> str:
@@ -391,7 +414,14 @@ def webbrowser(url: str, /, delay: float = 1.0) -> None:
     threading.Timer(delay, lambda: webbrowser.open(url)).start()
 
 
-def cgi(url: str, /, *, open_browser: bool = True, debug: bool = True) -> int:
+def cgi(
+    url: str,
+    /,
+    *,
+    open_browser: bool = True,
+    debug: bool = True,
+    maxlen: int | None = None,
+) -> int:
     """Run web application in local CGI server.
 
     Parameters:
@@ -401,6 +431,8 @@ def cgi(url: str, /, *, open_browser: bool = True, debug: bool = True) -> int:
             Open `url` in web browser.
         debug:
             Enable debug mode.
+        maxlen:
+            Maximum length of DNA sequence.
 
     """
     import cgi
@@ -422,7 +454,7 @@ def cgi(url: str, /, *, open_browser: bool = True, debug: bool = True) -> int:
         print('Content-type: text/html\n\n')  # noqa: T201
         request = cgi.FieldStorage()
         request.get = request.getfirst
-        print(response(request, url))  # noqa: T201
+        print(response(request, url, maxlen=maxlen))  # noqa: T201
     else:
         from http.server import CGIHTTPRequestHandler, HTTPServer
         from urllib.parse import urlparse
@@ -454,6 +486,7 @@ def main(
     *,
     open_browser: bool = True,
     debug: bool = False,
+    maxlen: int | None = None,
 ) -> int:
     """Run web application in local Flask server.
 
@@ -467,6 +500,10 @@ def main(
             Open `url` in web browser.
         debug:
             Enable debug mode.
+        maxlen:
+            Maximum length of DNA sequence.
+            The default is the ``DNACURVE_MAXLEN`` environment variable
+            or dnacurve.MAXLEN.
 
     """
     if not url:
@@ -474,7 +511,7 @@ def main(
     try:
         from flask import Flask, request
     except ImportError:
-        return cgi(url, open_browser=open_browser, debug=debug)
+        return cgi(url, open_browser=open_browser, debug=debug, maxlen=maxlen)
 
     from urllib.parse import urlparse
 
@@ -487,7 +524,7 @@ def main(
 
     @app.route('/', methods=['GET', 'POST'])
     def root() -> str:
-        return response(request.form, request.base_url)
+        return response(request.form, request.base_url, maxlen=maxlen)
 
     if open_browser:
         webbrowser(url)
